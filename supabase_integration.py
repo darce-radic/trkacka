@@ -185,10 +185,24 @@ def update_organization(org_id, updates):
 def fetch_organization_data(org_id, table_name):
     """
     Fetch data for a specific organization from the specified table.
+
+    Parameters:
+    - org_id: The ID of the organization to fetch data for.
+    - table_name: The name of the table to query.
+
+    Returns:
+    - A list of records for the specified organization, or an empty list if no data is found.
     """
     response = supabase.table(f"public.{table_name}").select("*").eq("organization_id", org_id).execute()
-    if response.get("data"):
-        return response["data"]
+    
+    # Check for errors in the response
+    if response.error:
+        st.error(f"Error fetching data from table {table_name}: {response.error}")
+        return []
+
+    # Check if data exists
+    if response.data:
+        return response.data
     else:
-        st.error(f"No data found in table {table_name} for organization ID {org_id}")
+        st.warning(f"No data found in table {table_name} for organization ID {org_id}")
         return []
