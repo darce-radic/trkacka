@@ -151,3 +151,13 @@ def update_organization(org_id, updates):
     """
     response = supabase.table("organizations").update(updates).eq("id", org_id).execute()
     return response
+
+def fetch_organization_data(org_id, table_name):
+    """
+    Fetch data for a specific organization from the specified table.
+    """
+    response = supabase.table(table_name).select("*").eq("organization_id", org_id).execute()
+    if response.get("data"):
+        return response["data"]
+    else:
+        raise ValueError(f"No data found in table {table_name} for organization ID {org_id}")
