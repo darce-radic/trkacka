@@ -57,8 +57,10 @@ def enrich_merchant_data(data):
     # Debugging: Check the columns of the DataFrame
     print("DataFrame columns:", data.columns)
 
-    if "Merchant" not in data.columns:
-        raise ValueError("The 'Merchant' column is missing from the data.")
+    required_columns = ["Merchant"]
+    missing_columns = [col for col in required_columns if col not in data.columns]
+    if missing_columns:
+        raise ValueError(f"The following required columns are missing from the data: {', '.join(missing_columns)}")
 
     data["Merchant Info"] = data["Merchant"].apply(lambda x: serper_tool.run(x))
     return data
@@ -68,6 +70,11 @@ def detect_recurring_charges(data, historical_data=None):
     Detect recurring charges by analyzing transaction intervals and comparing
     with historical subscriptions.
     """
+    required_columns = ["Merchant", "Date"]
+    missing_columns = [col for col in required_columns if col not in data.columns]
+    if missing_columns:
+        raise ValueError(f"The following required columns are missing from the data: {', '.join(missing_columns)}")
+
     # Calculate intervals between transactions for each merchant
     data["Interval"] = data.groupby("Merchant")["Date"].diff().dt.days
     data["Is_Recurring"] = data["Interval"].apply(

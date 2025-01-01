@@ -134,16 +134,30 @@ def render_run_crewai_logic(user):
     if file_id:
         file_data = fetch_file_data(file_id)
 
-        # Run CrewAI Workflow
+        # Check for required columns before running the workflow
+        required_columns = ["Merchant", "Date", "Amount", "Description"]
+        missing_columns = [col for col in required_columns if col not in file_data.columns]
+        if missing_columns:
+            st.error(f"The following required columns are missing from the data: {', '.join(missing_columns)}")
+            return
+
+        # Run CrewAI Workflow with progress indicator
         st.write("Processing CrewAI Workflow...")
-        result = run_crewai_workflow(file_data)
+        progress_bar = st.progress(0)
+        with st.spinner("Running CrewAI workflow..."):
+            result = run_crewai_workflow(file_data)
+            progress_bar.progress(50)
 
         # Display CrewAI results
+        st.write("CrewAI Workflow Results:")
         display_crewai_results(result)
+        progress_bar.progress(75)
 
         # Enrich and store data
+        st.write("Enriching Merchant Data...")
         enriched_data = enrich_merchant_data(file_data)
         upload_enriched_data(user_id, file_id, enriched_data)
+        progress_bar.progress(100)
 
         # Display enriched data
         st.write("Enriched Merchant Data:")
