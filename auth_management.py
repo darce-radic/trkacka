@@ -39,6 +39,7 @@ def signup_user():
     organization = st.text_input("Organization Name")
 
     if st.button("Sign Up"):
+        response = None  # Initialize response variable
         try:
             response = supabase.auth.sign_up({"email": email, "password": password})
             if response and response.get('user'):
@@ -68,6 +69,7 @@ def create_superuser():
     print(f"Superuser Password: {password}")
 
     # Check if the superuser already exists
+    response = None  # Initialize response variable
     try:
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
         if response and "user" in response:
