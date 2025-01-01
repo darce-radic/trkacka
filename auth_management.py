@@ -26,6 +26,7 @@ def authenticate_user():
         except Exception as e:
             st.error(f"Error: {e}")
             st.write(f"Exception details: {e}")  # Detailed exception information
+            st.write(f"Supabase response: {response}")  # Log the full response
     return None
 
 def signup_user():
