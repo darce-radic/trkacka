@@ -12,6 +12,7 @@ def render_navigation():
     return st.sidebar.radio(
         "Navigation",
         [
+            "Dashboard",
             "Upload Files",
             "Upload Bank Data (MitoSheet)",
             "Recurring Charge Detection",
@@ -20,6 +21,33 @@ def render_navigation():
             "Run CrewAI Logic",
         ]
     )
+
+def render_dashboard(user):
+    """
+    Render the dashboard page with user and organization information.
+    """
+    st.title("Dashboard")
+
+    # Fetch organization information
+    organization = fetch_organizations().loc[fetch_organizations()["id"] == user.organization_id].iloc[0]
+
+    # Fetch number of files loaded
+    files = fetch_uploaded_files(user.id)
+    num_files = len(files)
+
+    # Fetch subscriptions
+    subscriptions = fetch_stored_subscriptions(user.id)
+    num_subscriptions = len(subscriptions)
+
+    # Display information
+    st.subheader("User Information")
+    st.write(f"Email: {user.email}")
+    st.write(f"Organization: {organization['name']}")
+
+    st.subheader("Statistics")
+    st.metric("Number of Files Loaded", num_files)
+    st.metric("Subscriptions Found", num_subscriptions)
+    st.metric("Cancelled Subscriptions", len(subscriptions[subscriptions["status"] == "cancelled"]))
 
 def render_upload_page(user):
     """
@@ -31,10 +59,15 @@ def render_upload_page(user):
     if uploaded_file:
         st.write("Processing file...")
         try:
-            processed_data = process_uploaded_file(uploaded_file, user)
-            st.success("File processed successfully!")
-            st.dataframe(processed_data)
-            st.session_state.user = user  # Update session state
+            # Read the content of the uploaded file
+            data = pd.read_csv(uploaded_file)
+            # Display MitoSheet for data preview and manipulation
+            sheet(data)
+            if st.button("Save and Process"):
+                processed_data = process_uploaded_file(data, user)
+                st.success("File processed successfully!")
+                st.dataframe(processed_data)
+                st.session_state.user = user  # Update session state
         except Exception as e:
             st.error(f"Error: {e}")
 
@@ -75,7 +108,7 @@ def render_recurring_charge_detection(user):
     """
     st.title("Recurring Charge Detection")
 
-    files = fetch_uploaded_files(user["id"])
+    files = fetch_uploaded_files(user.id)
     if not files:
         st.warning("No uploaded files found.")
         return
@@ -93,7 +126,7 @@ def render_recurring_charge_detection(user):
 
         # Store recurring charges if confirmed by the user
         if st.button("Store Recurring Charges"):
-            store_recurring_charges(user["id"], detected_data)
+            store_recurring_charges(user.id, detected_data)
             st.success("Recurring charges stored successfully!")
             st.session_state.user = user  # Update session state
 
@@ -103,7 +136,7 @@ def render_stored_subscriptions(user):
     """
     st.title("Stored Subscriptions")
 
-    subscriptions = fetch_stored_subscriptions(user["id"])
+    subscriptions = fetch_stored_subscriptions(user.id)
     if subscriptions:
         st.write("Stored Validated Subscriptions:")
         st.dataframe(subscriptions)

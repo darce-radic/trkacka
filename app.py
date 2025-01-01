@@ -3,11 +3,12 @@ import streamlit as st
 from supabase import create_client, Client
 import ui_management
 from subscriptions import process_uploaded_file, enrich_merchant_data
-from supabase_integration import fetch_uploaded_files, upload_enriched_data
+from supabase_integration import fetch_uploaded_files, fetch_stored_subscriptions, fetch_organizations
 from ml_model import train_model
 from crewai_workflow import run_crewai_workflow
 from auth_management import authenticate_user, signup_user
 import initialization
+from dashboard import render_dashboard  # Import the dashboard rendering function
 
 # Load credentials from st.secrets
 supabase_url = st.secrets["supabase"]["url"]
@@ -78,6 +79,7 @@ def main():
             page = st.sidebar.radio(
                 "Navigation",
                 [
+                    "Dashboard",
                     "Upload Files",
                     "Recurring Charge Detection",
                     "Subscription Validation",
@@ -88,7 +90,9 @@ def main():
                 ]
             )
 
-            if page == "Upload Files":
+            if page == "Dashboard":
+                render_dashboard(user)
+            elif page == "Upload Files":
                 ui_management.render_upload_page(user)
             elif page == "Recurring Charge Detection":
                 ui_management.render_recurring_charge_detection(user)
