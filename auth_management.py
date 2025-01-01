@@ -58,7 +58,7 @@ def signup_user():
             else:
                 st.error("Error signing up. Please try again.")
         except Exception as e:
-            if "User already registered" in str(e)):
+            if "User already registered" in str(e):
                 st.error("User already exists. Please log in.")
             else:
                 st.error(f"Error: {e}")
