@@ -1,7 +1,6 @@
 import pandas as pd
 from supabase_integration import upload_bank_data
 
-
 def validate_file(data, required_columns=None):
     """
     Validate the uploaded file for required columns.
@@ -12,14 +11,20 @@ def validate_file(data, required_columns=None):
     missing_columns = [col for col in required_columns if col not in data.columns]
     if missing_columns:
         raise ValueError(f"Missing required columns: {', '.join(missing_columns)}")
+    
+    if data.empty:
+        raise ValueError("The uploaded file is empty.")
+    
     return data
-
 
 def validate_and_normalize(file_path):
     """
     Validate and normalize the uploaded file.
     """
-    data = pd.read_csv(file_path)
+    try:
+        data = pd.read_csv(file_path)
+    except Exception as e:
+        raise ValueError(f"Error reading the CSV file: {e}")
 
     # Normalize columns
     column_mappings = {
@@ -35,10 +40,12 @@ def validate_and_normalize(file_path):
 
     # Normalize date format
     data["Date"] = pd.to_datetime(data["Date"], errors="coerce")
+    if data["Date"].isnull().any():
+        raise ValueError("Some dates could not be converted. Please check the date format.")
+
     data.dropna(subset=["Date"], inplace=True)
 
     return data
-
 
 def enrich_merchant_data(data):
     """
@@ -49,7 +56,6 @@ def enrich_merchant_data(data):
 
     data["Merchant Info"] = data["Merchant"].apply(lambda x: serper_tool.run(x))
     return data
-
 
 def detect_recurring_charges(data, historical_data=None):
     """
@@ -71,7 +77,6 @@ def detect_recurring_charges(data, historical_data=None):
 
     return data
 
-
 def detect_subscriptions(data):
     """
     Detect subscriptions by analyzing recurring charges and categories.
@@ -79,7 +84,6 @@ def detect_subscriptions(data):
     data = detect_recurring_charges(data)
     subscriptions = data[data["Is_Recurring"] == "Yes"]
     return subscriptions
-
 
 def analyze_spending_trends(data):
     """
@@ -89,14 +93,12 @@ def analyze_spending_trends(data):
     spending_trends = data.groupby("Month")["Amount"].sum().reset_index()
     return spending_trends
 
-
 def filter_others(data):
     """
     Filter transactions categorized as "Others".
     """
     others_data = data[data["Category"] == "Others"]
     return others_data
-
 
 def calculate_savings(data):
     """
@@ -124,7 +126,6 @@ def calculate_savings(data):
         savings.append({"Merchant": row["merchant"], "Amount Saved": saved_amount})
 
     return pd.DataFrame(savings)
-
 
 def process_uploaded_file(data, user):
     """

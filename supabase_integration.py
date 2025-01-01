@@ -19,7 +19,11 @@ def fetch_stored_subscriptions(user_id):
     Fetch stored validated subscriptions for a specific user.
     """
     response = supabase.table("public.validated_subscriptions").select("*").eq("user_id", user_id).execute()
-    return response.data
+    if response.data:
+        return response.data
+    else:
+        st.error("No subscriptions found.")
+        return []
 
 def upload_bank_data(user_id, file_name, data):
     """
@@ -31,6 +35,8 @@ def upload_bank_data(user_id, file_name, data):
         "data": data.to_json(orient="records"),
         "uploaded_at": pd.Timestamp.now().isoformat()
     }).execute()
+    if response.error:
+        st.error(f"Error uploading bank data: {response.error}")
     return response
 
 def fetch_uploaded_files(user_id):
@@ -38,7 +44,11 @@ def fetch_uploaded_files(user_id):
     Fetch uploaded files for a specific user.
     """
     response = supabase.table("public.uploaded_files").select("*").eq("user_id", user_id).execute()
-    return response.data
+    if response.data:
+        return response.data
+    else:
+        st.error("No uploaded files found.")
+        return []
 
 def fetch_file_data(file_id):
     """
@@ -57,6 +67,8 @@ def update_keywords(category, keyword):
         "category": category,
         "keyword": keyword
     }).execute()
+    if response.error:
+        st.error(f"Error adding keyword: {response.error}")
     return response
 
 def fetch_keywords():
@@ -64,14 +76,22 @@ def fetch_keywords():
     Fetch all keywords from Supabase.
     """
     response = supabase.table("public.keywords").select("*").execute()
-    return response["data"]
+    if response.data:
+        return response.data
+    else:
+        st.error("No keywords found.")
+        return []
 
 def fetch_thresholds():
     """
     Fetch all thresholds from Supabase.
     """
     response = supabase.table("public.thresholds").select("*").execute()
-    return response["data"]
+    if response.data:
+        return response.data
+    else:
+        st.error("No thresholds found.")
+        return []
 
 def upload_enriched_data(user_id, file_name, data):
     """
@@ -83,6 +103,8 @@ def upload_enriched_data(user_id, file_name, data):
         "data": data.to_json(orient="records"),
         "uploaded_at": pd.Timestamp.now().isoformat()
     }).execute()
+    if response.error:
+        st.error(f"Error uploading enriched data: {response.error}")
     return response
 
 def fetch_enriched_data(user_id, file_name):
@@ -105,6 +127,8 @@ def log_action(action, user_id, organization_id=None, details=None):
         "details": details or {},
         "created_at": pd.Timestamp.now().isoformat()
     }).execute()
+    if response.error:
+        st.error(f"Error logging action: {response.error}")
     return response
 
 def fetch_logs():
@@ -112,20 +136,30 @@ def fetch_logs():
     Fetch all logs from the app_logs table.
     """
     response = supabase.table("public.app_logs").select("*").execute()
-    return pd.DataFrame(response.data)
+    if response.data:
+        return pd.DataFrame(response.data)
+    else:
+        st.error("No logs found.")
+        return pd.DataFrame()
 
 def fetch_users():
     """
     Fetch all users from the auth.users table.
     """
     response = service_supabase.table("auth.users").select("*").execute()
-    return pd.DataFrame(response.data)
+    if response.data:
+        return pd.DataFrame(response.data)
+    else:
+        st.error("No users found.")
+        return pd.DataFrame()
 
 def update_user(user_id, updates):
     """
     Update user information securely using the service role key.
     """
     response = service_supabase.table("auth.users").update(updates).eq("id", user_id).execute()
+    if response.error:
+        st.error(f"Error updating user: {response.error}")
     return response
 
 def fetch_organizations():
@@ -133,13 +167,19 @@ def fetch_organizations():
     Fetch all organizations from the public.organizations table.
     """
     response = supabase.table("public.organizations").select("*").execute()
-    return pd.DataFrame(response.data)
+    if response.data:
+        return pd.DataFrame(response.data)
+    else:
+        st.error("No organizations found.")
+        return pd.DataFrame()
 
 def update_organization(org_id, updates):
     """
     Update organization information.
     """
     response = supabase.table("public.organizations").update(updates).eq("id", org_id).execute()
+    if response.error:
+        st.error(f"Error updating organization: {response.error}")
     return response
 
 def fetch_organization_data(org_id, table_name):
@@ -150,4 +190,5 @@ def fetch_organization_data(org_id, table_name):
     if response.get("data"):
         return response["data"]
     else:
-        raise ValueError(f"No data found in table {table_name} for organization ID {org_id}")
+        st.error(f"No data found in table {table_name} for organization ID {org_id}")
+        return []

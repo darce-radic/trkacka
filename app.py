@@ -2,6 +2,7 @@ __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import streamlit as st
+from supabase import create_client, Client
 import ui_management
 from subscriptions import process_uploaded_file, enrich_merchant_data
 from supabase_integration import fetch_uploaded_files, upload_enriched_data
@@ -9,6 +10,15 @@ from ml_model import train_model
 from crewai_workflow import run_crewai_workflow
 from auth_management import authenticate_user, signup_user  # Import the necessary functions
 import initialization  # Import the initialization module
+
+# Initialize Supabase client
+supabase_url = st.secrets["supabase"]["url"]
+supabase_anon_key = st.secrets["supabase"]["anon_key"]
+supabase: Client = create_client(supabase_url, supabase_anon_key)
+
+# Service role client for admin operations
+supabase_service_role_key = st.secrets["supabase"]["service_role_key"]
+service_supabase = create_client(supabase_url, supabase_service_role_key)
 
 def render_run_crewai_logic(user):
     """

@@ -5,13 +5,11 @@ from sklearn.pipeline import Pipeline
 import pickle
 from supabase_integration import fetch_organization_data
 
-
 def load_validated_subscriptions(org_id):
     """
     Load validated subscriptions for an organization from Supabase.
     """
     return fetch_organization_data(org_id, "validated_subscriptions")
-
 
 def train_model(org_id):
     """
@@ -43,7 +41,6 @@ def train_model(org_id):
 
     return pipeline
 
-
 def load_model(org_id):
     """
     Load a trained machine learning model for an organization.
@@ -55,7 +52,6 @@ def load_model(org_id):
         return model
     except FileNotFoundError:
         raise ValueError(f"Model for organization {org_id} not found. Train the model first.")
-
 
 def predict_categories(org_id, data):
     """

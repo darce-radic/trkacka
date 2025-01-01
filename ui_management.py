@@ -2,8 +2,7 @@ import streamlit as st
 from mitosheet import sheet
 from subscriptions import process_uploaded_file, validate_and_normalize, detect_recurring_charges
 from supabase_integration import fetch_uploaded_files, fetch_file_data, fetch_stored_subscriptions
-from supabase_integration import fetch_users, fetch_logs
-
+from supabase_integration import fetch_users, fetch_logs, fetch_organizations, update_user, update_organization
 from visual_analysis import visualize_feature_importance
 
 def render_navigation():
@@ -77,12 +76,12 @@ def render_recurring_charge_detection(user):
     st.title("Recurring Charge Detection")
 
     files = fetch_uploaded_files(user["id"])
-    if files.empty:
+    if not files:
         st.warning("No uploaded files found.")
         return
 
     st.write("Uploaded Files:")
-    file_id = st.selectbox("Select a file to analyze", files["id"])
+    file_id = st.selectbox("Select a file to analyze", [file["id"] for file in files])
     if file_id:
         file_data = fetch_file_data(file_id)
 
@@ -97,8 +96,6 @@ def render_recurring_charge_detection(user):
             store_recurring_charges(user["id"], detected_data)
             st.success("Recurring charges stored successfully!")
             st.session_state.user = user  # Update session state
-
-from supabase_integration import fetch_logs, fetch_users, fetch_organizations, update_user, update_organization
 
 def render_stored_subscriptions(user):
     """

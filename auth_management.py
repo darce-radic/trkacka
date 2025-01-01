@@ -43,11 +43,14 @@ def signup_user():
             response = supabase.auth.sign_up({"email": email, "password": password})
             if response and response.user:
                 # Create organization record
-                supabase.table("public.organizations").insert({
+                org_response = supabase.table("public.organizations").insert({
                     "name": organization,
                     "admin_user_id": response.user.id
                 }).execute()
-                st.success("Account created successfully! Please log in.")
+                if org_response.error:
+                    st.error(f"Error creating organization: {org_response.error}")
+                else:
+                    st.success("Account created successfully! Please log in.")
             else:
                 st.error("Error signing up. Please try again.")
         except Exception as e:
@@ -64,20 +67,18 @@ def create_superuser():
     password = st.secrets["superuser"]["password"]
 
     # Check if the superuser already exists
-    response = None  # Initialize response variable
-    try:
-        response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+    response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+    if response and response.user:
+        user = response.user
+        service_supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
+        st.write("Superuser already exists.")
+    else:
+        # Create a new superuser
+        response = supabase.auth.sign_up({"email": email, "password": password})
         if response and response.user:
             user = response.user
             service_supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
-            print("Superuser already exists.")
-        else:
-            # Create a new superuser
-            response = supabase.auth.sign_up({"email": email, "password": password})
-            if response and response.user:
-                user = response.user
-                service_supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
-                print("Superuser created successfully!")
+            st.write("Superuser created successfully!")
 
         # Create the "FitTech" organization and assign it to the superuser
         org_response = supabase.table("public.organizations").insert({
@@ -86,12 +87,9 @@ def create_superuser():
         }).execute()
         if org_response.data:
             service_supabase.table("auth.users").update({"organization_id": org_response.data[0]["id"]}).eq("id", user.id).execute()
-            print("Organization 'FitTech' created and assigned to the superuser.")
+            st.write("Organization 'FitTech' created and assigned to the superuser.")
 
         return user
 
-    except Exception as e:
-        print(f"Error during superuser creation: {e}")
-
-    print("Failed to create superuser.")
+    st.write("Failed to create superuser.")
     return None
