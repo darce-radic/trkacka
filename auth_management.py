@@ -19,9 +19,9 @@ def authenticate_user():
             st.write(f"Attempting to log in with email: {email}")  # Debugging information
             response = supabase.auth.sign_in_with_password({"email": email, "password": password})
             st.write(f"Response: {response}")  # Debugging information
-            if response and response.get('user'):
-                st.success(f"Welcome, {response['user']['email']}!")
-                return response['user']
+            if response and response.user:
+                st.success(f"Welcome, {response.user.email}!")
+                return response.user
             else:
                 st.error("Invalid credentials.")
         except Exception as e:
@@ -42,11 +42,11 @@ def signup_user():
         response = None  # Initialize response variable
         try:
             response = supabase.auth.sign_up({"email": email, "password": password})
-            if response and response.get('user'):
+            if response and response.user:
                 # Create organization record
                 supabase.table("organizations").insert({
                     "name": organization,
-                    "user_id": response['user']['id']
+                    "user_id": response.user.id
                 }).execute()
                 st.success("Account created successfully! Please log in.")
             else:
@@ -72,17 +72,17 @@ def create_superuser():
     response = None  # Initialize response variable
     try:
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        if response and "user" in response:
-            user = response["user"]
-            supabase.table("auth.users").update({"is_superuser": True}).eq("id", user["id"]).execute()
+        if response and response.user:
+            user = response.user
+            supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
             print("Superuser already exists.")
             return user
 
         # Create a new superuser
         response = supabase.auth.sign_up({"email": email, "password": password})
-        if response and "user" in response:
-            user = response["user"]
-            supabase.table("auth.users").update({"is_superuser": True}).eq("id", user["id"]).execute()
+        if response and response.user:
+            user = response.user
+            supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
             print("Superuser created successfully!")
             return user
 
