@@ -1,6 +1,4 @@
-__import__('pysqlite3')
 import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import streamlit as st
 from supabase import create_client, Client
 import ui_management
@@ -8,10 +6,10 @@ from subscriptions import process_uploaded_file, enrich_merchant_data
 from supabase_integration import fetch_uploaded_files, upload_enriched_data
 from ml_model import train_model
 from crewai_workflow import run_crewai_workflow
-from auth_management import authenticate_user, signup_user  # Import the necessary functions
-import initialization  # Import the initialization module
+from auth_management import authenticate_user, signup_user
+import initialization
 
-# Initialize Supabase client
+# Load credentials from st.secrets
 supabase_url = st.secrets["supabase"]["url"]
 supabase_anon_key = st.secrets["supabase"]["anon_key"]
 supabase: Client = create_client(supabase_url, supabase_anon_key)
@@ -26,7 +24,10 @@ def render_run_crewai_logic(user):
     """
     st.title("Run CrewAI Logic with Merchant Enrichment")
 
-    files = fetch_uploaded_files(user["id"])
+    # Access user ID correctly
+    user_id = user.id  # Correctly access the user ID
+
+    files = fetch_uploaded_files(user_id)
     if not files:
         st.warning("No files available for processing.")
         return
@@ -42,7 +43,7 @@ def render_run_crewai_logic(user):
 
         # Enrich and store data
         enriched_data = enrich_merchant_data(file_data)
-        upload_enriched_data(user["id"], file_id, enriched_data)
+        upload_enriched_data(user_id, file_id, enriched_data)
 
         # Display results
         st.write("CrewAI Result:")
@@ -62,10 +63,10 @@ def main():
         user = authenticate_user()
         if user:
             st.session_state.user = user
-            st.experimental_set_query_params(rerun="true")
+            st.query_params(rerun="true")
     elif auth_action == "Sign Up":
         signup_user()
-        st.experimental_set_query_params(rerun="true")
+        st.query_params(rerun="true")
 
     user = st.session_state.user
 
