@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd  # Import pandas
 # from mitosheet import sheet  # Comment out the Mito component import
 from subscriptions import process_uploaded_file, validate_and_normalize, detect_recurring_charges, enrich_merchant_data
-from supabase_integration import fetch_uploaded_files, fetch_file_data, fetch_stored_subscriptions
+from supabase_integration import fetch_uploaded_files, fetch_file_data, fetch_stored_subscriptions, upload_enriched_data
 from supabase_integration import fetch_users, fetch_logs, fetch_organizations, update_user, update_organization
 from visual_analysis import visualize_feature_importance
 
@@ -160,7 +160,7 @@ def render_recurring_charge_detection(user):
 
         # Store recurring charges if confirmed by the user
         if st.button("Store Recurring Charges"):
-            store_recurring_charges(user.id, detected_data)
+            upload_enriched_data(user.id, file_id, detected_data)
             st.success("Recurring charges stored successfully!")
             st.session_state.user = user  # Update session state
 
