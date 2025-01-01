@@ -57,7 +57,7 @@ def main():
 
     if user:
         st.write(f"User object: {user}")  # Debugging information
-        if "is_superuser" in user and user["is_superuser"]:
+        if hasattr(user, "is_superuser") and user.is_superuser:
             ui_management.render_superuser_dashboard()
         else:
             page = st.sidebar.radio(
@@ -78,13 +78,13 @@ def main():
             elif page == "Recurring Charge Detection":
                 ui_management.render_recurring_charge_detection(user)
             elif page == "Subscription Validation":
-                ui_management.render_subscription_validation(user["organization_id"], user)
+                ui_management.render_subscription_validation(user.organization_id, user)
             elif page == "Cancelled Subscriptions":
-                ui_management.render_cancelled_subscriptions(user["organization_id"], user)
+                ui_management.render_cancelled_subscriptions(user.organization_id, user)
             elif page == "Organization Summary":
-                ui_management.render_organization_summary(user["organization_id"])
+                ui_management.render_organization_summary(user.organization_id)
             elif page == "Train Model":
-                ui_management.render_train_model(user["organization_id"])
+                ui_management.render_train_model(user.organization_id)
             elif page == "Run CrewAI Logic":
                 render_run_crewai_logic(user)
 

@@ -1,7 +1,6 @@
 import os
 from supabase import create_client
 import streamlit as st
-from supabase import create_client
 
 # Load credentials from st.secrets
 supabase_url = st.secrets["supabase"]["url"]
@@ -20,9 +19,15 @@ def authenticate_user():
             response = supabase.auth.sign_in_with_password({"email": email, "password": password})
             st.write(f"Response: {response}")  # Debugging information
             if response and response.user:
-                st.success(f"Welcome, {response.user.email}!")
-                st.session_state.user = response.user  # Update session state
-                return response.user
+                user = response.user
+                # Fetch additional user attributes
+                user_data = supabase.table("auth.users").select("is_superuser, organization_id").eq("id", user.id).execute()
+                if user_data.data:
+                    user.is_superuser = user_data.data[0].get("is_superuser", False)
+                    user.organization_id = user_data.data[0].get("organization_id", None)
+                st.success(f"Welcome, {user.email}!")
+                st.session_state.user = user  # Update session state
+                return user
             else:
                 st.error("Invalid credentials.")
         except Exception as e:
@@ -62,12 +67,12 @@ def create_superuser():
     """
     Pre-create a superuser for the app.
     """
-    email = st.secrets["superuser"]["email"]
+    email = "darko.radiceski@gmail.com"
     password = st.secrets["superuser"]["password"]
 
     # Debugging information
-    #print(f"Superuser Email: {email}")
-    #print(f"Superuser Password: {password}")
+    print(f"Superuser Email: {email}")
+    print(f"Superuser Password: {password}")
 
     # Check if the superuser already exists
     response = None  # Initialize response variable
@@ -77,15 +82,24 @@ def create_superuser():
             user = response.user
             supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
             print("Superuser already exists.")
-            return user
+        else:
+            # Create a new superuser
+            response = supabase.auth.sign_up({"email": email, "password": password})
+            if response and response.user:
+                user = response.user
+                supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
+                print("Superuser created successfully!")
 
-        # Create a new superuser
-        response = supabase.auth.sign_up({"email": email, "password": password})
-        if response and response.user:
-            user = response.user
-            supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
-            print("Superuser created successfully!")
-            return user
+        # Create the "FitTech" organization and assign it to the superuser
+        org_response = supabase.table("organizations").insert({
+            "name": "FitTech",
+            "user_id": user.id
+        }).execute()
+        if org_response.data:
+            supabase.table("auth.users").update({"organization_id": org_response.data[0]["id"]}).eq("id", user.id).execute()
+            print("Organization 'FitTech' created and assigned to the superuser.")
+
+        return user
 
     except Exception as e:
         print(f"Error during superuser creation: {e}")
