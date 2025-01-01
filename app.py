@@ -63,10 +63,10 @@ def main():
         user = authenticate_user()
         if user:
             st.session_state.user = user
-            st.query_params(rerun="true")
+            st.experimental_set_query_params(rerun="true")
     elif auth_action == "Sign Up":
         signup_user()
-        st.query_params(rerun="true")
+        st.experimental_set_query_params(rerun="true")
 
     user = st.session_state.user
 
