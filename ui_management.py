@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd  # Import pandas
-from mitosheet.streamlit.v1 import spreadsheet  # Import the correct Mito component
+from mitosheet import sheet  # Import the correct Mito component
 from subscriptions import process_uploaded_file, validate_and_normalize, detect_recurring_charges
 from supabase_integration import fetch_uploaded_files, fetch_file_data, fetch_stored_subscriptions
 from supabase_integration import fetch_users, fetch_logs, fetch_organizations, update_user, update_organization
@@ -60,13 +60,12 @@ def render_upload_page(user):
     if uploaded_file:
         st.write("Processing file...")
         try:
-            # Read the content of the uploaded file
+            # Read the content of the uploaded file into a DataFrame
             data = pd.read_csv(uploaded_file)
             # Display MitoSheet for data preview and manipulation
-            new_dfs, code = spreadsheet(uploaded_file)
-            st.code(code)
+            sheet(data)
             if st.button("Save and Process"):
-                processed_data = process_uploaded_file(new_dfs[0], user)
+                processed_data = process_uploaded_file(data, user)
                 st.success("File processed successfully!")
                 st.dataframe(processed_data)
                 st.session_state.user = user  # Update session state
@@ -91,12 +90,13 @@ def render_upload_with_mitosheet(user):
     if uploaded_file:
         st.write("Opening MitoSheet for editing...")
         try:
+            # Read the content of the uploaded file into a DataFrame
+            data = pd.read_csv(uploaded_file)
             # Validate and normalize the file with MitoSheet
-            new_dfs, code = spreadsheet(uploaded_file)
-            st.code(code)
+            sheet(data)
 
             # Store edited data in Supabase
-            response = process_uploaded_file(new_dfs[0], user)
+            response = process_uploaded_file(data, user)
             if response.status_code == 201:
                 st.success("Edited data uploaded successfully!")
                 st.session_state.user = user  # Update session state
