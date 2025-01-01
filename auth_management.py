@@ -14,21 +14,7 @@ def authenticate_user():
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        response = supabase.auth.sign_in_with_password(email=email, password=password)
-        if response and response.get('user'):
-            st.success(f"Welcome, {response['user']['email']}!")
-            return response['user']
-        else:
-            st.error("Invalid credentials.")
-    return None
-
-def authenticate_user():
-    st.title("Login")
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-
-    if st.button("Login"):
-        response = supabase.auth.sign_in_with_password(email=email, password=password)
+        response = supabase.auth.sign_in_with_password({"email": email, "password": password})
         if response and response.get('user'):
             st.success(f"Welcome, {response['user']['email']}!")
             return response['user']
@@ -43,7 +29,7 @@ def signup_user():
     organization = st.text_input("Organization Name")
 
     if st.button("Sign Up"):
-        response = supabase.auth.sign_up(email=email, password=password)
+        response = supabase.auth.sign_up({"email": email, "password": password})
         if response and response.get('user'):
             # Create organization record
             supabase.table("organizations").insert({
@@ -62,7 +48,7 @@ def create_superuser():
     password = st.secrets["superuser"]["password"]
 
     # Check if the superuser already exists
-    response = supabase.auth.sign_in_with_password(email=email, password=password)
+    response = supabase.auth.sign_in_with_password({"email": email, "password": password})
     if response and "user" in response:
         user = response["user"]
         supabase.table("auth.users").update({"is_superuser": True}).eq("id", user["id"]).execute()
@@ -70,7 +56,7 @@ def create_superuser():
         return user
 
     # Create a new superuser
-    response = supabase.auth.sign_up(email=email, password=password)
+    response = supabase.auth.sign_up({"email": email, "password": password})
     if response and "user" in response:
         user = response["user"]
         supabase.table("auth.users").update({"is_superuser": True}).eq("id", user["id"]).execute()
