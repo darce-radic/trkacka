@@ -2,6 +2,8 @@ import streamlit as st
 from mitosheet import sheet
 from subscriptions import process_uploaded_file, validate_and_normalize, detect_recurring_charges
 from supabase_integration import fetch_uploaded_files, fetch_file_data, fetch_stored_subscriptions
+from supabase_integration import fetch_users, fetch_logs
+
 from visual_analysis import visualize_feature_importance
 
 

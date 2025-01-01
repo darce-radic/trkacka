@@ -5,8 +5,14 @@ from supabase import create_client
 
 # Load credentials from st.secrets
 supabase_url = st.secrets["supabase"]["url"]
-supabase_key = st.secrets["supabase"]["key"]
-supabase = create_client(supabase_url, supabase_key)
+supabase_anon_key = st.secrets["supabase"]["anon_key"]
+supabase_service_role_key = st.secrets["supabase"]["service_role_key"]
+
+# Anonymous client for regular operations
+supabase = create_client(supabase_url, supabase_anon_key)
+
+# Service role client for admin operations
+service_supabase = create_client(supabase_url, supabase_service_role_key)
 
 
 
@@ -25,10 +31,11 @@ def upload_bank_data(user_id, file_name, data):
 
 def fetch_uploaded_files(user_id):
     """
-    Retrieve uploaded files from Supabase for a specific user.
+    Fetch uploaded files for a specific user.
     """
     response = supabase.table("uploaded_files").select("*").eq("user_id", user_id).execute()
-    return pd.DataFrame(response.data)
+    return response.data
+
 
 
 def fetch_file_data(file_id):
@@ -93,7 +100,7 @@ def log_action(action, user_id, organization_id=None, details=None):
     """
     Log an action in the app.
     """
-    response = supabase.table("app_logs").insert({
+    response = service_supabase.table("app_logs").insert({
         "action": action,
         "user_id": user_id,
         "organization_id": organization_id,
@@ -119,9 +126,9 @@ def fetch_users():
 
 def update_user(user_id, updates):
     """
-    Update user information (e.g., activate/deactivate).
+    Update user information securely using the service role key.
     """
-    response = supabase.table("auth.users").update(updates).eq("id", user_id).execute()
+    response = service_supabase.table("auth.users").update(updates).eq("id", user_id).execute()
     return response
 
 def fetch_organizations():

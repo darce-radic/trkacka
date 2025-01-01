@@ -5,8 +5,8 @@ from supabase import create_client
 
 # Load credentials from st.secrets
 supabase_url = st.secrets["supabase"]["url"]
-supabase_key = st.secrets["supabase"]["key"]
-supabase = create_client(supabase_url, supabase_key)
+supabase_anon_key = st.secrets["supabase"]["anon_key"]
+supabase = create_client(supabase_url, supabase_anon_key)
 
 def authenticate_user():
     st.title("Login")

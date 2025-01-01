@@ -4,6 +4,7 @@ from subscriptions import process_uploaded_file, enrich_merchant_data
 from supabase_integration import fetch_uploaded_files, upload_enriched_data
 from ml_model import train_model
 from crewai_workflow import run_crewai_workflow
+from auth_management import authenticate_user
 
 
 def render_run_crewai_logic(user):
