@@ -1,5 +1,14 @@
+import re
 from crewai import Agent, Task, Crew, Process
-from crewai_tools import RegexTool, SerperDevTool, TextClassificationTool
+from crewai_tools import SerperDevTool, TextClassificationTool
+
+# Custom tool using re module
+class RegexTool:
+    def __init__(self):
+        pass
+
+    def clean_text(self, text, pattern, replacement):
+        return re.sub(pattern, replacement, text)
 
 # Initialize tools
 regex_tool = RegexTool()
@@ -76,7 +85,6 @@ crew = Crew(
     ],
     process=Process.sequential  # Execute tasks sequentially
 )
-
 
 def run_crewai_workflow(data):
     """
