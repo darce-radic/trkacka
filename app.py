@@ -43,16 +43,19 @@ def main():
     # Call initialization steps
     initialization.initialize_app()
 
-    user = None
+    if "user" not in st.session_state:
+        st.session_state.user = None
+
     auth_action = st.sidebar.selectbox("Choose Action", ["Login", "Sign Up"])
 
     if auth_action == "Login":
-        user = authenticate_user()
+        st.session_state.user = authenticate_user()
     elif auth_action == "Sign Up":
         signup_user()
 
+    user = st.session_state.user
+
     if user:
-        #st.write(f"User object: {user}")  # Debugging information
         if "is_superuser" in user and user["is_superuser"]:
             ui_management.render_superuser_dashboard()
         else:
