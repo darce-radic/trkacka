@@ -5,7 +5,9 @@ import streamlit as st
 # Load credentials from st.secrets
 supabase_url = st.secrets["supabase"]["url"]
 supabase_anon_key = st.secrets["supabase"]["anon_key"]
+supabase_service_role_key = st.secrets["supabase"]["service_role_key"]  # Add service role key
 supabase = create_client(supabase_url, supabase_anon_key)
+service_supabase = create_client(supabase_url, supabase_service_role_key)  # Create service role client
 
 def authenticate_user():
     st.title("Login")
@@ -18,11 +20,6 @@ def authenticate_user():
             response = supabase.auth.sign_in_with_password({"email": email, "password": password})
             if response and response.user:
                 user = response.user
-                # Fetch additional user attributes
-                user_data = supabase.table("auth.users").select("is_superuser, organization_id").eq("id", user.id).execute()
-                if user_data.data:
-                    user.is_superuser = user_data.data[0].get("is_superuser", False)
-                    user.organization_id = user_data.data[0].get("organization_id", None)
                 st.success(f"Welcome, {user.email}!")
                 st.session_state.user = user  # Update session state
                 return user
@@ -72,14 +69,14 @@ def create_superuser():
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
         if response and response.user:
             user = response.user
-            supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
+            service_supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
             print("Superuser already exists.")
         else:
             # Create a new superuser
             response = supabase.auth.sign_up({"email": email, "password": password})
             if response and response.user:
                 user = response.user
-                supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
+                service_supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
                 print("Superuser created successfully!")
 
         # Create the "FitTech" organization and assign it to the superuser
@@ -88,7 +85,7 @@ def create_superuser():
             "admin_user_id": user.id
         }).execute()
         if org_response.data:
-            supabase.table("auth.users").update({"organization_id": org_response.data[0]["id"]}).eq("id", user.id).execute()
+            service_supabase.table("auth.users").update({"organization_id": org_response.data[0]["id"]}).eq("id", user.id).execute()
             print("Organization 'FitTech' created and assigned to the superuser.")
 
         return user

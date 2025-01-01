@@ -118,7 +118,7 @@ def fetch_users():
     """
     Fetch all users from the auth.users table.
     """
-    response = supabase.table("auth.users").select("*").execute()
+    response = service_supabase.table("auth.users").select("*").execute()
     return pd.DataFrame(response.data)
 
 def update_user(user_id, updates):
