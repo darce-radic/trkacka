@@ -218,3 +218,10 @@ def render_superuser_dashboard():
 
         st.metric("Total Users", len(users))
         st.metric("Total Organizations", len(organizations))
+
+def render_enriched_merchant_data(data):
+    """
+    Render the enriched merchant data.
+    """
+    st.title("Enriched Merchant Data")
+    st.dataframe(data)
