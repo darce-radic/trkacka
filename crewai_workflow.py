@@ -46,25 +46,29 @@ enrichment_agent = Agent(
 
 # Define Tasks
 normalization_task = Task(
-    description="Normalize uploaded data into a consistent format.",
-    expected_output="Normalized data with standardized columns.",
+    description="Normalize uploaded data into a consistent format. "
+                "Ensure columns are standardized and transaction details are parsed.",
+    expected_output="Normalized data with standardized columns and parsed descriptions.",
     agent=normalizer_agent
 )
 
 pattern_analysis_task = Task(
-    description="Analyze the normalized data to detect recurring transactions.",
-    expected_output="List of recurring transactions with patterns identified.",
+    description="Analyze the normalized data to detect recurring transactions. "
+                "Focus on identifying subscriptions and repetitive payments.",
+    expected_output="List of recurring transactions with identified patterns.",
     agent=pattern_analyzer_agent
 )
 
 categorization_task = Task(
-    description="Categorize recurring transactions into predefined categories.",
+    description="Categorize recurring transactions into predefined categories such as "
+                "'Subscription', 'Refund', 'One-time Payment', etc.",
     expected_output="Categorized transactions with corresponding labels.",
     agent=categorizer_agent
 )
 
 enrichment_task = Task(
-    description="Use SerperDevTool to enrich merchant information for each transaction.",
+    description="Use SerperDevTool to enrich merchant information for each transaction. "
+                "Provide additional context such as industry or location.",
     expected_output="Merchant data enriched with additional contextual information.",
     agent=enrichment_agent
 )
@@ -88,12 +92,21 @@ crew = Crew(
 
 def run_crewai_workflow(data):
     """
-    Run CrewAI workflow on the given data.
+    Run CrewAI workflow on the given data with enhanced logging.
     """
     print("Running CrewAI workflow...")
     try:
+        # Kickoff workflow
         result = crew.kickoff(inputs={"data": data.to_dict(orient="records")})
-        print("CrewAI workflow result:", result)  # Debugging information
+        
+        # Log each task's output
+        for idx, task_result in enumerate(result):
+            print(f"Task {idx+1} - {task_result['task']} result:")
+            if "output" in task_result:
+                print(task_result["output"])
+            if "error" in task_result:
+                print(f"Error: {task_result['error']}")
+        
         return result
     except Exception as e:
         print(f"Error running CrewAI workflow: {e}")
@@ -135,7 +148,7 @@ def render_run_crewai_logic(user):
         file_data = fetch_file_data(file_id)
 
         # Check for required columns before running the workflow
-        required_columns = ["Merchant", "Date", "Amount", "Description"]
+        required_columns = ["Date", "Amount", "Description"]
         missing_columns = [col for col in required_columns if col not in file_data.columns]
         if missing_columns:
             st.error(f"The following required columns are missing from the data: {', '.join(missing_columns)}")
