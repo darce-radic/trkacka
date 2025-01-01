@@ -6,7 +6,6 @@ from supabase_integration import fetch_users, fetch_logs
 
 from visual_analysis import visualize_feature_importance
 
-
 def render_navigation():
     """
     Render the navigation sidebar.
@@ -22,7 +21,6 @@ def render_navigation():
             "Run CrewAI Logic",
         ]
     )
-
 
 def render_upload_page(user):
     """
@@ -40,7 +38,6 @@ def render_upload_page(user):
             st.session_state.user = user  # Update session state
         except Exception as e:
             st.error(f"Error: {e}")
-
 
 def render_upload_with_mitosheet(user):
     """
@@ -72,7 +69,6 @@ def render_upload_with_mitosheet(user):
                 st.error("Failed to store data.")
         except Exception as e:
             st.error(f"Error processing file: {e}")
-
 
 def render_recurring_charge_detection(user):
     """
@@ -116,7 +112,6 @@ def render_stored_subscriptions(user):
         st.dataframe(subscriptions)
     else:
         st.warning("No subscriptions found.")
-
 
 def render_superuser_dashboard():
     """
