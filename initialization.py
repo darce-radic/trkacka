@@ -13,6 +13,5 @@ def initialize_app():
     except Exception as e:
         print(f"Error during superuser creation: {e}")
 
-
     # Add other initialization steps if needed
     print("Initialization complete.")

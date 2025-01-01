@@ -8,6 +8,7 @@ from supabase_integration import fetch_uploaded_files, upload_enriched_data
 from ml_model import train_model
 from crewai_workflow import run_crewai_workflow
 from auth_management import authenticate_user, signup_user  # Import the necessary functions
+import initialization  # Import the initialization module
 
 def render_run_crewai_logic(user):
     """
@@ -37,8 +38,6 @@ def render_run_crewai_logic(user):
         st.write("CrewAI Result:")
         st.json(result)
         ui_management.render_enriched_merchant_data(enriched_data)
-
-import initialization  # Import the initialization module
 
 def main():
     # Call initialization steps
