@@ -14,12 +14,15 @@ def authenticate_user():
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        if response and response.get('user'):
-            st.success(f"Welcome, {response['user']['email']}!")
-            return response['user']
-        else:
-            st.error("Invalid credentials.")
+        try:
+            response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            if response and response.get('user'):
+                st.success(f"Welcome, {response['user']['email']}!")
+                return response['user']
+            else:
+                st.error("Invalid credentials.")
+        except Exception as e:
+            st.error(f"Error: {e}")
     return None
 
 def signup_user():
@@ -29,16 +32,19 @@ def signup_user():
     organization = st.text_input("Organization Name")
 
     if st.button("Sign Up"):
-        response = supabase.auth.sign_up({"email": email, "password": password})
-        if response and response.get('user'):
-            # Create organization record
-            supabase.table("organizations").insert({
-                "name": organization,
-                "user_id": response['user']['id']
-            }).execute()
-            st.success("Account created successfully! Please log in.")
-        else:
-            st.error("Error signing up. Please try again.")
+        try:
+            response = supabase.auth.sign_up({"email": email, "password": password})
+            if response and response.get('user'):
+                # Create organization record
+                supabase.table("organizations").insert({
+                    "name": organization,
+                    "user_id": response['user']['id']
+                }).execute()
+                st.success("Account created successfully! Please log in.")
+            else:
+                st.error("Error signing up. Please try again.")
+        except Exception as e:
+            st.error(f"Error: {e}")
 
 def create_superuser():
     """
@@ -48,20 +54,24 @@ def create_superuser():
     password = st.secrets["superuser"]["password"]
 
     # Check if the superuser already exists
-    response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-    if response and "user" in response:
-        user = response["user"]
-        supabase.table("auth.users").update({"is_superuser": True}).eq("id", user["id"]).execute()
-        print("Superuser already exists.")
-        return user
+    try:
+        response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        if response and "user" in response:
+            user = response["user"]
+            supabase.table("auth.users").update({"is_superuser": True}).eq("id", user["id"]).execute()
+            print("Superuser already exists.")
+            return user
 
-    # Create a new superuser
-    response = supabase.auth.sign_up({"email": email, "password": password})
-    if response and "user" in response:
-        user = response["user"]
-        supabase.table("auth.users").update({"is_superuser": True}).eq("id", user["id"]).execute()
-        print("Superuser created successfully!")
-        return user
+        # Create a new superuser
+        response = supabase.auth.sign_up({"email": email, "password": password})
+        if response and "user" in response:
+            user = response["user"]
+            supabase.table("auth.users").update({"is_superuser": True}).eq("id", user["id"]).execute()
+            print("Superuser created successfully!")
+            return user
+
+    except Exception as e:
+        print(f"Error during superuser creation: {e}")
 
     print("Failed to create superuser.")
     return None
