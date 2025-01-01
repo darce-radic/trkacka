@@ -9,3 +9,4 @@ crewai
 requests
 shap
 mitosheet
+chromadb>=0.3.0
