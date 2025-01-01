@@ -21,7 +21,6 @@ def fetch_stored_subscriptions(user_id):
     response = supabase.table("validated_subscriptions").select("*").eq("user_id", user_id).execute()
     return response.data
 
-
 def upload_bank_data(user_id, file_name, data):
     """
     Store uploaded bank data in Supabase.
@@ -34,15 +33,12 @@ def upload_bank_data(user_id, file_name, data):
     }).execute()
     return response
 
-
 def fetch_uploaded_files(user_id):
     """
     Fetch uploaded files for a specific user.
     """
     response = supabase.table("uploaded_files").select("*").eq("user_id", user_id).execute()
     return response.data
-
-
 
 def fetch_file_data(file_id):
     """
@@ -52,7 +48,6 @@ def fetch_file_data(file_id):
     if response.data:
         return pd.read_json(response.data[0]["data"])
     return pd.DataFrame()
-
 
 def update_keywords(category, keyword):
     """
@@ -64,14 +59,12 @@ def update_keywords(category, keyword):
     }).execute()
     return response
 
-
 def fetch_keywords():
     """
     Fetch all keywords from Supabase.
     """
     response = supabase.table("keywords").select("*").execute()
     return response["data"]
-
 
 def fetch_thresholds():
     """
@@ -91,7 +84,6 @@ def upload_enriched_data(user_id, file_name, data):
         "uploaded_at": pd.Timestamp.now().isoformat()
     }).execute()
     return response
-
 
 def fetch_enriched_data(user_id, file_name):
     """
@@ -124,17 +116,16 @@ def fetch_logs():
 
 def fetch_users():
     """
-    Fetch all users from the auth.users table.
+    Fetch all users from the users table.
     """
-    response = supabase.table("auth.users").select("*").execute()
+    response = supabase.table("users").select("*").execute()
     return pd.DataFrame(response.data)
-
 
 def update_user(user_id, updates):
     """
     Update user information securely using the service role key.
     """
-    response = service_supabase.table("auth.users").update(updates).eq("id", user_id).execute()
+    response = service_supabase.table("users").update(updates).eq("id", user_id).execute()
     return response
 
 def fetch_organizations():
@@ -143,7 +134,6 @@ def fetch_organizations():
     """
     response = supabase.table("organizations").select("*").execute()
     return pd.DataFrame(response.data)
-
 
 def update_organization(org_id, updates):
     """

@@ -21,7 +21,7 @@ def authenticate_user():
             if response and response.user:
                 user = response.user
                 # Fetch additional user attributes
-                user_data = supabase.table("auth.users").select("is_superuser, organization_id").eq("id", user.id).execute()
+                user_data = supabase.table("users").select("is_superuser, organization_id").eq("id", user.id).execute()
                 if user_data.data:
                     user.is_superuser = user_data.data[0].get("is_superuser", False)
                     user.organization_id = user_data.data[0].get("organization_id", None)
@@ -80,14 +80,14 @@ def create_superuser():
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
         if response and response.user:
             user = response.user
-            supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
+            supabase.table("users").update({"is_superuser": True}).eq("id", user.id).execute()
             print("Superuser already exists.")
         else:
             # Create a new superuser
             response = supabase.auth.sign_up({"email": email, "password": password})
             if response and response.user:
                 user = response.user
-                supabase.table("auth.users").update({"is_superuser": True}).eq("id", user.id).execute()
+                supabase.table("users").update({"is_superuser": True}).eq("id", user.id).execute()
                 print("Superuser created successfully!")
 
         # Create the "FitTech" organization and assign it to the superuser
@@ -96,7 +96,7 @@ def create_superuser():
             "user_id": user.id
         }).execute()
         if org_response.data:
-            supabase.table("auth.users").update({"organization_id": org_response.data[0]["id"]}).eq("id", user.id).execute()
+            supabase.table("users").update({"organization_id": org_response.data[0]["id"]}).eq("id", user.id).execute()
             print("Organization 'FitTech' created and assigned to the superuser.")
 
         return user
