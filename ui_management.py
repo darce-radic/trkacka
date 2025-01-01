@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd  # Import pandas
-from mitosheet import sheet  # Import the correct Mito component
+from mitosheet.streamlit.v1 import spreadsheet  # Import the correct Mito component
 from subscriptions import process_uploaded_file, validate_and_normalize, detect_recurring_charges
 from supabase_integration import fetch_uploaded_files, fetch_file_data, fetch_stored_subscriptions
 from supabase_integration import fetch_users, fetch_logs, fetch_organizations, update_user, update_organization
@@ -63,9 +63,10 @@ def render_upload_page(user):
             # Read the content of the uploaded file
             data = pd.read_csv(uploaded_file)
             # Display MitoSheet for data preview and manipulation
-            sheet(data)
+            new_dfs, code = spreadsheet(uploaded_file)
+            st.code(code)
             if st.button("Save and Process"):
-                processed_data = process_uploaded_file(data, user)
+                processed_data = process_uploaded_file(new_dfs[0], user)
                 st.success("File processed successfully!")
                 st.dataframe(processed_data)
                 st.session_state.user = user  # Update session state
@@ -91,10 +92,11 @@ def render_upload_with_mitosheet(user):
         st.write("Opening MitoSheet for editing...")
         try:
             # Validate and normalize the file with MitoSheet
-            edited_data = validate_and_normalize_with_mitosheet(uploaded_file)
+            new_dfs, code = spreadsheet(uploaded_file)
+            st.code(code)
 
             # Store edited data in Supabase
-            response = process_uploaded_file(edited_data, user)
+            response = process_uploaded_file(new_dfs[0], user)
             if response.status_code == 201:
                 st.success("Edited data uploaded successfully!")
                 st.session_state.user = user  # Update session state
