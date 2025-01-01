@@ -5,6 +5,7 @@ import os
 
 # Load OpenAI API key from st.secrets
 os.environ["OPENAI_API_KEY"] = st.secrets["openai"]["api_key"]
+
 # Initialize tools
 csv_tool = CSVSearchTool()
 rag_tool = RagTool()
@@ -90,5 +91,60 @@ def run_crewai_workflow(data):
     Run CrewAI workflow on the given data.
     """
     print("Running CrewAI workflow...")
-    result = crew.kickoff(inputs={"data": data.to_dict(orient="records")})
-    return result
+    try:
+        result = crew.kickoff(inputs={"data": data.to_dict(orient="records")})
+        print("CrewAI workflow result:", result)  # Debugging information
+        return result
+    except Exception as e:
+        print(f"Error running CrewAI workflow: {e}")
+        return None
+
+def display_crewai_results(result):
+    """
+    Display the results of the CrewAI workflow.
+    """
+    if result is None:
+        st.error("No results to display. The workflow may have encountered an error.")
+        return
+
+    st.write("CrewAI Workflow Results:")
+    for task_result in result:
+        st.subheader(task_result["task"])
+        if "output" in task_result:
+            st.write(task_result["output"])
+        if "error" in task_result:
+            st.error(task_result["error"])
+
+def render_run_crewai_logic(user):
+    """
+    Run CrewAI logic on stored data and display enriched merchant data.
+    """
+    st.title("Run CrewAI Logic with Merchant Enrichment")
+
+    # Access user ID correctly
+    user_id = user.id  # Correctly access the user ID
+
+    files = fetch_uploaded_files(user_id)
+    if not files:
+        st.warning("No files available for processing.")
+        return
+
+    st.write("Available Files:")
+    file_id = st.selectbox("Select a file to process", [file["id"] for file in files])
+    if file_id:
+        file_data = fetch_file_data(file_id)
+
+        # Run CrewAI Workflow
+        st.write("Processing CrewAI Workflow...")
+        result = run_crewai_workflow(file_data)
+
+        # Display CrewAI results
+        display_crewai_results(result)
+
+        # Enrich and store data
+        enriched_data = enrich_merchant_data(file_data)
+        upload_enriched_data(user_id, file_id, enriched_data)
+
+        # Display enriched data
+        st.write("Enriched Merchant Data:")
+        st.dataframe(enriched_data)

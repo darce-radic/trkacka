@@ -54,6 +54,12 @@ def enrich_merchant_data(data):
     from crewai_tools import SerperDevTool
     serper_tool = SerperDevTool()
 
+    # Debugging: Check the columns of the DataFrame
+    print("DataFrame columns:", data.columns)
+
+    if "Merchant" not in data.columns:
+        raise ValueError("The 'Merchant' column is missing from the data.")
+
     data["Merchant Info"] = data["Merchant"].apply(lambda x: serper_tool.run(x))
     return data
 

@@ -25,6 +25,9 @@ supabase: Client = create_client(supabase_url, supabase_anon_key)
 supabase_service_role_key = st.secrets["supabase"]["service_role_key"]
 service_supabase = create_client(supabase_url, supabase_service_role_key)
 
+# Set SERPER_API_KEY
+os.environ["SERPER_API_KEY"] = "ebc89a77abd19b5367010c4a9470685832e547ef"
+
 def render_run_crewai_logic(user):
     """
     Run CrewAI logic on stored data and display enriched merchant data.
@@ -103,7 +106,7 @@ def main():
             elif page == "Recurring Charge Detection":
                 ui_management.render_recurring_charge_detection(user)
             elif page == "Subscription Validation":
-                ui_management.render_subscription_validation(user.organization_id, user)
+                ui_management.render_stored_subscriptions(user)  # Use the correct function
             elif page == "Cancelled Subscriptions":
                 ui_management.render_cancelled_subscriptions(user.organization_id, user)
             # elif page == "Organization Summary":  # Comment out this line
