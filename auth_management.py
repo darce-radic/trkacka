@@ -15,9 +15,7 @@ def authenticate_user():
     if st.button("Login"):
         response = None  # Initialize response variable
         try:
-            st.write(f"Attempting to log in with email: {email}")  # Debugging information
             response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            st.write(f"Response: {response}")  # Debugging information
             if response and response.user:
                 user = response.user
                 # Fetch additional user attributes
@@ -34,8 +32,6 @@ def authenticate_user():
             st.error(f"Error: {e}")
             st.write(f"Exception details: {e}")  # Detailed exception information
             st.write(f"Supabase response: {response}")  # Log the full response
-            st.write(f"Supabase URL: {supabase_url}")  # Log Supabase URL
-            st.write(f"Supabase Anon Key: {supabase_anon_key}")  # Log Supabase Anon Key
     return None
 
 def signup_user():
@@ -69,10 +65,6 @@ def create_superuser():
     """
     email = "darko.radiceski@gmail.com"
     password = st.secrets["superuser"]["password"]
-
-    # Debugging information
-    print(f"Superuser Email: {email}")
-    print(f"Superuser Password: {password}")
 
     # Check if the superuser already exists
     response = None  # Initialize response variable
