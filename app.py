@@ -51,8 +51,9 @@ def main():
     elif auth_action == "Sign Up":
         signup_user()
 
-    if user and "is_superuser" in user:
-        if user["is_superuser"]:
+    if user:
+        st.write(f"User object: {user}")  # Debugging information
+        if "is_superuser" in user and user["is_superuser"]:
             ui_management.render_superuser_dashboard()
         else:
             page = st.sidebar.radio(
