@@ -7,7 +7,6 @@ matplotlib
 scikit-learn
 supabase
 crewai
-crewai_tools
 requests
 shap
 mitosheet
