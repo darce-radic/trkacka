@@ -10,4 +10,5 @@ scikit-learn
 supabase
 requests
 shap
-mitosheet 
+mitosheet
+posthog

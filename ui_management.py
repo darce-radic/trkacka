@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd  # Import pandas
 from mitosheet import sheet
 from subscriptions import process_uploaded_file, validate_and_normalize, detect_recurring_charges
 from supabase_integration import fetch_uploaded_files, fetch_file_data, fetch_stored_subscriptions
