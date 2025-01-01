@@ -6,7 +6,7 @@ def validate_file(data, required_columns=None):
     Validate the uploaded file for required columns.
     """
     if required_columns is None:
-        required_columns = ["Date", "Amount", "Merchant", "Description"]
+        required_columns = ["Date", "Amount", "Description"]
 
     missing_columns = [col for col in required_columns if col not in data.columns]
     if missing_columns:
@@ -30,7 +30,6 @@ def validate_and_normalize(file_path):
     column_mappings = {
         "Date": "Date",
         "Amount": "Amount",
-        "Merchant": "Merchant",
         "Description": "Description"
     }
     data.rename(columns=column_mappings, inplace=True)
@@ -54,6 +53,10 @@ def enrich_merchant_data(data):
     from crewai_tools import SerperDevTool
     serper_tool = SerperDevTool()
 
+    # Infer the 'Merchant' column if it is missing
+    if "Merchant" not in data.columns:
+        data["Merchant"] = data["Description"].apply(lambda desc: infer_merchant_from_description(desc))
+
     # Debugging: Check the columns of the DataFrame
     print("DataFrame columns:", data.columns)
 
@@ -64,6 +67,21 @@ def enrich_merchant_data(data):
 
     data["Merchant Info"] = data["Merchant"].apply(lambda x: serper_tool.run(x))
     return data
+
+def infer_merchant_from_description(description):
+    """
+    Infer merchant information based on transaction description.
+    This function uses simple keyword matching; replace with actual enrichment logic.
+    """
+    # Mocked logic for now; replace with tool/API calls
+    if "Netflix" in description:
+        return "Netflix"
+    elif "Spotify" in description:
+        return "Spotify"
+    elif "Gym" in description:
+        return "Local Gym"
+    else:
+        return "Unknown Merchant"
 
 def detect_recurring_charges(data, historical_data=None):
     """

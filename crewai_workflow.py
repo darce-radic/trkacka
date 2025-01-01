@@ -54,7 +54,7 @@ def enrich_merchant_data(data):
     """
     Enrich recurring transactions by inferring merchant details from descriptions.
     """
-    # Ensure the 'Merchant' column exists
+    # Infer the 'Merchant' column if it is missing
     if "Merchant" not in data.columns:
         data["Merchant"] = data["Description"].apply(lambda desc: infer_merchant_from_description(desc))
 
