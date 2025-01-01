@@ -49,8 +49,10 @@ def main():
     auth_action = st.sidebar.selectbox("Choose Action", ["Login", "Sign Up"])
 
     if auth_action == "Login":
-        st.session_state.user = authenticate_user()
-        st.experimental_rerun()
+        user = authenticate_user()
+        if user:
+            st.session_state.user = user
+            st.experimental_rerun()
     elif auth_action == "Sign Up":
         signup_user()
         st.experimental_rerun()
