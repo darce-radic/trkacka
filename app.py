@@ -51,7 +51,7 @@ def main():
     elif auth_action == "Sign Up":
         signup_user()
 
-    if user:
+    if user and "is_superuser" in user:
         if user["is_superuser"]:
             ui_management.render_superuser_dashboard()
         else:
