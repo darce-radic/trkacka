@@ -17,14 +17,14 @@ def render_run_crewai_logic(user):
     st.title("Run CrewAI Logic with Merchant Enrichment")
 
     files = fetch_uploaded_files(user["id"])
-    if files.empty:
+    if not files:
         st.warning("No files available for processing.")
         return
 
     st.write("Available Files:")
-    file_id = st.selectbox("Select a file to process", files["id"])
+    file_id = st.selectbox("Select a file to process", [file["id"] for file in files])
     if file_id:
-        file_data = fetch_uploaded_files(file_id)
+        file_data = fetch_file_data(file_id)
 
         # Run CrewAI Workflow
         st.write("Processing CrewAI Workflow...")
@@ -32,7 +32,7 @@ def render_run_crewai_logic(user):
 
         # Enrich and store data
         enriched_data = enrich_merchant_data(file_data)
-        upload_enriched_data(user["id"], files.loc[file_id, 'file_name'], enriched_data)
+        upload_enriched_data(user["id"], file_id, enriched_data)
 
         # Display results
         st.write("CrewAI Result:")
