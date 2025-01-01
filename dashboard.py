@@ -8,7 +8,13 @@ def render_dashboard(user):
     st.title("Dashboard")
 
     # Fetch organization information
-    organization = fetch_organizations().loc[fetch_organizations()["id"] == user.organization_id].iloc[0]
+    organizations_df = fetch_organizations()
+    st.write("Organizations DataFrame:", organizations_df)  # Debugging information
+    if "id" not in organizations_df.columns:
+        st.error("The 'id' column is missing from the organizations DataFrame.")
+        return
+
+    organization = organizations_df.loc[organizations_df["id"] == user.organization_id].iloc[0]
 
     # Fetch number of files loaded
     files = fetch_uploaded_files(user.id)

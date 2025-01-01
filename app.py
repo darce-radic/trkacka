@@ -1,4 +1,3 @@
-
 __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
@@ -12,6 +11,10 @@ from crewai_workflow import run_crewai_workflow
 from auth_management import authenticate_user, signup_user
 import initialization
 from dashboard import render_dashboard  # Import the dashboard rendering function
+import posthog
+
+# Disable telemetry
+posthog.disable_telemetry()
 
 # Load credentials from st.secrets
 supabase_url = st.secrets["supabase"]["url"]
