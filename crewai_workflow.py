@@ -50,11 +50,27 @@ def detect_recurring_charges(data):
 
     return recurring_data
 
-# Step 3: Enrichment Logic
+def enrich_merchant_data(data):
+    """
+    Enrich recurring transactions by inferring merchant details from descriptions.
+    """
+    # Ensure the 'Merchant' column exists
+    if "Merchant" not in data.columns:
+        data["Merchant"] = data["Description"].apply(lambda desc: infer_merchant_from_description(desc))
+
+    # Add enrichment context (e.g., category)
+    data["Category"] = data["Merchant"].apply(
+        lambda merchant: "Subscription" if merchant != "Unknown Merchant" else "Unknown"
+    )
+
+    return data
+
 def infer_merchant_from_description(description):
     """
-    Use CrewAI tools (like SerperDevTool) or mock logic to infer merchant.
+    Infer merchant information based on transaction description.
+    This function uses simple keyword matching; replace with actual enrichment logic.
     """
+    # Mocked logic for now; replace with tool/API calls
     if "Netflix" in description:
         return "Netflix"
     elif "Spotify" in description:
@@ -64,21 +80,6 @@ def infer_merchant_from_description(description):
     else:
         return "Unknown Merchant"
 
-def enrich_recurring_charges(recurring_data):
-    """
-    Enrich recurring charges by adding merchant and subscription-related context.
-    """
-    if recurring_data.empty:
-        return recurring_data
-
-    recurring_data["Merchant"] = recurring_data["Description"].apply(
-        lambda desc: infer_merchant_from_description(desc)
-    )
-    recurring_data["Category"] = recurring_data["Merchant"].apply(
-        lambda merchant: "Subscription" if merchant != "Unknown Merchant" else "Unknown"
-    )
-
-    return recurring_data
 
 # Step 4: Full Workflow
 def run_subscription_detection(data):
@@ -155,26 +156,3 @@ crew = Crew(
     process=Process.sequential  # Sequential execution of tasks
 )
 
-# Example Run
-if __name__ == "__main__":
-    # Example dataset
-    sample_data = pd.DataFrame({
-        "Date": ["2024-12-27", "2024-12-27", "2024-12-24", "2024-12-24", "2024-12-23"],
-        "Amount": [-300, -297.1, -300, -200, -300],
-        "Description": [
-            "Netflix Subscription Dec", 
-            "Spotify Dec Payment", 
-            "Netflix Subscription Nov", 
-            "Gym Monthly Fee", 
-            "Netflix Subscription Oct"
-        ]
-    })
-
-    # Run workflow
-    result = run_subscription_detection(sample_data)
-
-    if result is not None:
-        print("Recurring Subscriptions Detected:")
-        print(result)
-    else:
-        print("No recurring subscriptions found.")
