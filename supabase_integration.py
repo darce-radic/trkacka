@@ -14,6 +14,12 @@ supabase = create_client(supabase_url, supabase_anon_key)
 # Service role client for admin operations
 service_supabase = create_client(supabase_url, supabase_service_role_key)
 
+def fetch_stored_subscriptions(user_id):
+    """
+    Fetch stored validated subscriptions for a specific user.
+    """
+    response = supabase.table("validated_subscriptions").select("*").eq("user_id", user_id).execute()
+    return response.data
 
 
 def upload_bank_data(user_id, file_name, data):
