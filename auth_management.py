@@ -14,6 +14,7 @@ def authenticate_user():
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
+        response = None  # Initialize response variable
         try:
             st.write(f"Attempting to log in with email: {email}")  # Debugging information
             response = supabase.auth.sign_in_with_password({"email": email, "password": password})
