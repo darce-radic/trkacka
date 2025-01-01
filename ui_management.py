@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd  # Import pandas
 # from mitosheet import sheet  # Comment out the Mito component import
-from subscriptions import process_uploaded_file, validate_and_normalize, detect_recurring_charges
+from subscriptions import process_uploaded_file, validate_and_normalize, detect_recurring_charges, enrich_merchant_data
 from supabase_integration import fetch_uploaded_files, fetch_file_data, fetch_stored_subscriptions
 from supabase_integration import fetch_users, fetch_logs, fetch_organizations, update_user, update_organization
 from visual_analysis import visualize_feature_importance
@@ -147,6 +147,10 @@ def render_recurring_charge_detection(user):
     file_id = st.selectbox("Select a file to analyze", [file["id"] for file in files])
     if file_id:
         file_data = fetch_file_data(file_id)
+
+        # Enrich merchant data if the 'Merchant' column is missing
+        if "Merchant" not in file_data.columns:
+            file_data = enrich_merchant_data(file_data)
 
         # Detect recurring charges
         detected_data = detect_recurring_charges(file_data)
