@@ -148,7 +148,7 @@ def render_run_crewai_logic(user):
         file_data = fetch_file_data(file_id)
 
         # Check for required columns before running the workflow
-        required_columns = ["Date", "Amount", "Description"]
+        required_columns = ["Date", "Amount", "Description", "Merchant"]
         missing_columns = [col for col in required_columns if col not in file_data.columns]
         if missing_columns:
             st.error(f"The following required columns are missing from the data: {', '.join(missing_columns)}")
