@@ -101,6 +101,19 @@ def render_recurring_charge_detection(user):
 
 from supabase_integration import fetch_logs, fetch_users, fetch_organizations, update_user, update_organization
 
+def render_stored_subscriptions(user):
+    """
+    Render validated subscriptions for a user.
+    """
+    st.title("Stored Subscriptions")
+
+    subscriptions = fetch_stored_subscriptions(user["id"])
+    if subscriptions:
+        st.write("Stored Validated Subscriptions:")
+        st.dataframe(subscriptions)
+    else:
+        st.warning("No subscriptions found.")
+
 
 def render_superuser_dashboard():
     """
