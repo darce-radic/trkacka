@@ -63,6 +63,10 @@ def create_superuser():
     email = st.secrets["superuser"]["email"]
     password = st.secrets["superuser"]["password"]
 
+    # Debugging information
+    print(f"Superuser Email: {email}")
+    print(f"Superuser Password: {password}")
+
     # Check if the superuser already exists
     try:
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
