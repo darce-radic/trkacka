@@ -68,9 +68,12 @@ def render_upload_page(user):
             # sheet(data)  # Comment out the MitoSheet component
             if st.button("Save and Process"):
                 processed_data = process_uploaded_file(data, user)
-                st.success("File processed successfully!")
-                st.dataframe(processed_data)
-                st.session_state.user = user  # Update session state
+                if processed_data is not None:
+                    st.success("File processed successfully!")
+                    st.dataframe(processed_data)
+                    st.session_state.user = user  # Update session state
+                else:
+                    st.error("Error processing file: processed_data is None")
         except Exception as e:
             st.error(f"Error: {e}")
 

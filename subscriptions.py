@@ -132,4 +132,6 @@ def process_uploaded_file(data, user):
     Store uploaded files in Supabase.
     """
     response = upload_bank_data(user.id, "uploaded_file.csv", data)
-    return response
+    if response.data is None:
+        return None
+    return data

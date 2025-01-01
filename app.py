@@ -5,7 +5,7 @@ import streamlit as st
 from supabase import create_client, Client
 import ui_management
 from subscriptions import process_uploaded_file, enrich_merchant_data
-from supabase_integration import fetch_uploaded_files, fetch_stored_subscriptions, fetch_organizations
+from supabase_integration import fetch_uploaded_files, fetch_stored_subscriptions, fetch_organizations, fetch_file_data  # Import fetch_file_data
 from ml_model import train_model
 from crewai_workflow import run_crewai_workflow
 from auth_management import authenticate_user, signup_user
@@ -90,7 +90,7 @@ def main():
                     "Recurring Charge Detection",
                     "Subscription Validation",
                     "Cancelled Subscriptions",
-                    "Organization Summary",
+                    # "Organization Summary",  # Comment out this line
                     "Train Model",
                     "Run CrewAI Logic"
                 ]
@@ -106,8 +106,8 @@ def main():
                 ui_management.render_subscription_validation(user.organization_id, user)
             elif page == "Cancelled Subscriptions":
                 ui_management.render_cancelled_subscriptions(user.organization_id, user)
-            elif page == "Organization Summary":
-                ui_management.render_organization_summary(user.organization_id)
+            # elif page == "Organization Summary":  # Comment out this line
+            #     ui_management.render_organization_summary(user.organization_id)  # Comment out this line
             elif page == "Train Model":
                 ui_management.render_train_model(user.organization_id)
             elif page == "Run CrewAI Logic":
