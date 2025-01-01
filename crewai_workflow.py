@@ -80,9 +80,8 @@ def infer_merchant_from_description(description):
     else:
         return "Unknown Merchant"
 
-
 # Step 4: Full Workflow
-def run_subscription_detection(data):
+def run_crewai_workflow(data):
     """
     Full workflow to detect recurring transactions and enrich them.
     """
@@ -98,7 +97,7 @@ def run_subscription_detection(data):
             return None
 
         # Step 3: Enrich recurring transactions
-        enriched_data = enrich_recurring_charges(recurring_data)
+        enriched_data = enrich_merchant_data(recurring_data)
 
         return enriched_data
     except Exception as e:

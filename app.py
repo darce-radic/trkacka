@@ -3,14 +3,14 @@ import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import streamlit as st
 from supabase import create_client, Client
-import ui_management
+import ui_management  # Ensure this module exists and is correctly named
 from subscriptions import process_uploaded_file, enrich_merchant_data
-from supabase_integration import fetch_uploaded_files, fetch_stored_subscriptions, fetch_organizations, fetch_file_data  # Import fetch_file_data
+from supabase_integration import fetch_uploaded_files, fetch_stored_subscriptions, fetch_organizations, fetch_file_data
 from ml_model import train_model
-from crewai_workflow import run_crewai_workflow
+from crewai_workflow import run_crewai_workflow  # Ensure this function is correctly defined and imported
 from auth_management import authenticate_user, signup_user
 import initialization
-from dashboard import render_dashboard  # Import the dashboard rendering function
+from dashboard import render_dashboard
 import os
 
 # Disable telemetry by setting an environment variable
