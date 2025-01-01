@@ -37,6 +37,7 @@ def render_upload_page(user):
             processed_data = process_uploaded_file(uploaded_file, user)
             st.success("File processed successfully!")
             st.dataframe(processed_data)
+            st.session_state.user = user  # Update session state
         except Exception as e:
             st.error(f"Error: {e}")
 
@@ -66,6 +67,7 @@ def render_upload_with_mitosheet(user):
             response = process_uploaded_file(edited_data, user)
             if response.status_code == 201:
                 st.success("Edited data uploaded successfully!")
+                st.session_state.user = user  # Update session state
             else:
                 st.error("Failed to store data.")
         except Exception as e:
@@ -98,6 +100,7 @@ def render_recurring_charge_detection(user):
         if st.button("Store Recurring Charges"):
             store_recurring_charges(user["id"], detected_data)
             st.success("Recurring charges stored successfully!")
+            st.session_state.user = user  # Update session state
 
 from supabase_integration import fetch_logs, fetch_users, fetch_organizations, update_user, update_organization
 

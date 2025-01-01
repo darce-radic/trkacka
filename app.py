@@ -56,6 +56,7 @@ def main():
     user = st.session_state.user
 
     if user:
+        st.write(f"User object: {user}")  # Debugging information
         if "is_superuser" in user and user["is_superuser"]:
             ui_management.render_superuser_dashboard()
         else:
