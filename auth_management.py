@@ -21,6 +21,7 @@ def authenticate_user():
             st.write(f"Response: {response}")  # Debugging information
             if response and response.user:
                 st.success(f"Welcome, {response.user.email}!")
+                st.session_state.user = response.user  # Update session state
                 return response.user
             else:
                 st.error("Invalid credentials.")
