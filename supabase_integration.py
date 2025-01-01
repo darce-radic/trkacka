@@ -18,18 +18,17 @@ def fetch_stored_subscriptions(user_id):
     """
     Fetch stored validated subscriptions for a specific user.
     """
-    response = supabase.table("public.validated_subscriptions").select("*").eq("user_id", user_id).execute()
-    if response.data:
-        return response.data
-    else:
-        st.error("No subscriptions found.")
+    response = supabase.table("validated_subscriptions").select("*").eq("user_id", user_id).execute()
+    if response.error:
+        st.error(f"Error fetching subscriptions: {response.error}")
         return []
+    return response.data if response.data else []
 
 def upload_bank_data(user_id, file_name, data):
     """
     Store uploaded bank data in Supabase.
     """
-    response = supabase.table("public.uploaded_files").insert({
+    response = supabase.table("uploaded_files").insert({
         "user_id": user_id,
         "file_name": file_name,
         "data": data.to_json(orient="records"),
@@ -43,18 +42,20 @@ def fetch_uploaded_files(user_id):
     """
     Fetch uploaded files for a specific user.
     """
-    response = supabase.table("public.uploaded_files").select("*").eq("user_id", user_id).execute()
-    if response.data:
-        return response.data
-    else:
-        st.error("No uploaded files found.")
+    response = supabase.table("uploaded_files").select("*").eq("user_id", user_id).execute()
+    if response.error:
+        st.error(f"Error fetching uploaded files: {response.error}")
         return []
+    return response.data if response.data else []
 
 def fetch_file_data(file_id):
     """
     Retrieve file data by ID.
     """
-    response = supabase.table("public.uploaded_files").select("data").eq("id", file_id).execute()
+    response = supabase.table("uploaded_files").select("data").eq("id", file_id).execute()
+    if response.error:
+        st.error(f"Error fetching file data: {response.error}")
+        return pd.DataFrame()
     if response.data:
         return pd.read_json(response.data[0]["data"])
     return pd.DataFrame()
@@ -63,7 +64,7 @@ def update_keywords(category, keyword):
     """
     Add a new keyword to Supabase.
     """
-    response = supabase.table("public.keywords").insert({
+    response = supabase.table("keywords").insert({
         "category": category,
         "keyword": keyword
     }).execute()
@@ -75,29 +76,27 @@ def fetch_keywords():
     """
     Fetch all keywords from Supabase.
     """
-    response = supabase.table("public.keywords").select("*").execute()
-    if response.data:
-        return response.data
-    else:
-        st.error("No keywords found.")
+    response = supabase.table("keywords").select("*").execute()
+    if response.error:
+        st.error(f"Error fetching keywords: {response.error}")
         return []
+    return response.data if response.data else []
 
 def fetch_thresholds():
     """
     Fetch all thresholds from Supabase.
     """
-    response = supabase.table("public.thresholds").select("*").execute()
-    if response.data:
-        return response.data
-    else:
-        st.error("No thresholds found.")
+    response = supabase.table("thresholds").select("*").execute()
+    if response.error:
+        st.error(f"Error fetching thresholds: {response.error}")
         return []
+    return response.data if response.data else []
 
 def upload_enriched_data(user_id, file_name, data):
     """
     Store enriched merchant data in Supabase.
     """
-    response = supabase.table("public.enriched_data").insert({
+    response = supabase.table("enriched_data").insert({
         "user_id": user_id,
         "file_name": file_name,
         "data": data.to_json(orient="records"),
@@ -111,7 +110,10 @@ def fetch_enriched_data(user_id, file_name):
     """
     Fetch enriched merchant data by file name.
     """
-    response = supabase.table("public.enriched_data").select("data").eq("user_id", user_id).eq("file_name", file_name).execute()
+    response = supabase.table("enriched_data").select("data").eq("user_id", user_id).eq("file_name", file_name).execute()
+    if response.error:
+        st.error(f"Error fetching enriched data: {response.error}")
+        return pd.DataFrame()
     if response.data:
         return pd.read_json(response.data[0]["data"])
     return pd.DataFrame()
@@ -120,7 +122,7 @@ def log_action(action, user_id, organization_id=None, details=None):
     """
     Log an action in the app.
     """
-    response = service_supabase.table("public.app_logs").insert({
+    response = service_supabase.table("app_logs").insert({
         "action": action,
         "user_id": user_id,
         "organization_id": organization_id,
@@ -135,23 +137,21 @@ def fetch_logs():
     """
     Fetch all logs from the app_logs table.
     """
-    response = supabase.table("public.app_logs").select("*").execute()
-    if response.data:
-        return pd.DataFrame(response.data)
-    else:
-        st.error("No logs found.")
+    response = supabase.table("app_logs").select("*").execute()
+    if response.error:
+        st.error(f"Error fetching logs: {response.error}")
         return pd.DataFrame()
+    return pd.DataFrame(response.data) if response.data else pd.DataFrame()
 
 def fetch_users():
     """
     Fetch all users from the auth.users table.
     """
     response = service_supabase.table("auth.users").select("*").execute()
-    if response.data:
-        return pd.DataFrame(response.data)
-    else:
-        st.error("No users found.")
+    if response.error:
+        st.error(f"Error fetching users: {response.error}")
         return pd.DataFrame()
+    return pd.DataFrame(response.data) if response.data else pd.DataFrame()
 
 def update_user(user_id, updates):
     """
@@ -162,47 +162,21 @@ def update_user(user_id, updates):
         st.error(f"Error updating user: {response.error}")
     return response
 
-def fetch_organizations():
-    """
-    Fetch all organizations from the public.organizations table.
-    """
-    response = supabase.table("public.organizations").select("*").execute()
-    if response.data:
-        return pd.DataFrame(response.data)
-    else:
-        st.error("No organizations found.")
-        return pd.DataFrame()
-
 def update_organization(org_id, updates):
     """
     Update organization information.
     """
-    response = supabase.table("public.organizations").update(updates).eq("id", org_id).execute()
+    response = supabase.table("organizations").update(updates).eq("id", org_id).execute()
     if response.error:
         st.error(f"Error updating organization: {response.error}")
     return response
 
-def fetch_organization_data(org_id, table_name):
+def fetch_organizations():
     """
-    Fetch data for a specific organization from the specified table.
-
-    Parameters:
-    - org_id: The ID of the organization to fetch data for.
-    - table_name: The name of the table to query.
-
-    Returns:
-    - A list of records for the specified organization, or an empty list if no data is found.
+    Fetch all organizations from the public.organizations table.
     """
-    response = supabase.table(f"public.{table_name}").select("*").eq("organization_id", org_id).execute()
-    
-    # Check for errors in the response
+    response = supabase.table("organizations").select("*").execute()
     if response.error:
-        st.error(f"Error fetching data from table {table_name}: {response.error}")
-        return []
-
-    # Check if data exists
-    if response.data:
-        return response.data
-    else:
-        st.warning(f"No data found in table {table_name} for organization ID {org_id}")
-        return []
+        st.error(f"Error fetching organizations: {response.error}")
+        return pd.DataFrame()
+    return pd.DataFrame(response.data) if response.data else pd.DataFrame()
