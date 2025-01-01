@@ -1,0 +1,7 @@
+{
+    "Entertainment": ["Netflix", "Spotify", "Hulu"],
+    "Utilities": ["Electric", "Water", "Gas"],
+    "Health & Fitness": ["Gym", "Yoga", "Peloton"],
+    "Education": ["Udemy", "Coursera", "Skillshare"],
+    "Others": []
+}

@@ -1,5 +1,3 @@
-# trkacka
- trkacka
 .
 ├── app.py                     # Main entry point for the Streamlit app
 ├── crewai_workflow.py         # CrewAI workflow: agents, tasks, and crew
