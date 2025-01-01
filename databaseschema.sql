@@ -395,3 +395,144 @@ CREATE POLICY "Service role can read logs"
 ON public.app_logs 
 FOR SELECT 
 USING (auth.role() = 'service_role');
+
+-- Drop existing policies on auth.users
+drop policy if exists "Allow authenticated users to read their own data" on auth.users;
+drop policy if exists "Allow authenticated users to update their own data" on auth.users;
+drop policy if exists "Allow service role to update any user data" on auth.users;
+
+-- Drop existing policies on public.organizations
+drop policy if exists "Allow authenticated users to read their own organization data" on public.organizations;
+drop policy if exists "Allow authenticated users to insert organization data" on public.organizations;
+drop policy if exists "Allow service role to update any organization data" on public.organizations;
+
+-- Drop existing policies on public.validated_subscriptions
+drop policy if exists "Allow authenticated users to read their own validated subscriptions" on public.validated_subscriptions;
+drop policy if exists "Allow authenticated users to insert validated subscriptions" on public.validated_subscriptions;
+drop policy if exists "Allow service role to update any validated subscriptions" on public.validated_subscriptions;
+
+-- Drop existing policies on public.uploaded_files
+drop policy if exists "Allow authenticated users to read their own uploaded files" on public.uploaded_files;
+drop policy if exists "Allow authenticated users to insert uploaded files" on public.uploaded_files;
+drop policy if exists "Allow service role to update any uploaded files" on public.uploaded_files;
+
+-- Drop existing policies on public.enriched_data
+drop policy if exists "Allow authenticated users to read their own enriched data" on public.enriched_data;
+drop policy if exists "Allow authenticated users to insert enriched data" on public.enriched_data;
+drop policy if exists "Allow service role to update any enriched data" on public.enriched_data;
+
+-- Drop existing policies on public.app_logs
+drop policy if exists "Allow service role to insert logs" on public.app_logs;
+drop policy if exists "Allow service role to read logs" on public.app_logs;
+
+-- Recreate policies on auth.users
+create policy "Allow authenticated users to read their own data"
+on auth.users
+for select
+using (auth.uid() = id);
+
+create policy "Allow authenticated users to update their own data"
+on auth.users
+for update
+using (auth.uid() = id);
+
+create policy "Allow service role to update any user data"
+on auth.users
+for update
+using (auth.role() = 'service_role');
+
+-- Recreate policies on public.organizations
+create policy "Allow authenticated users to read their own organization data"
+on public.organizations
+for select
+using (auth.uid() = admin_user_id);
+
+create policy "Allow authenticated users to insert organization data"
+on public.organizations
+for insert
+with check (auth.uid() = admin_user_id);
+
+create policy "Allow service role to update any organization data"
+on public.organizations
+for update
+using (auth.role() = 'service_role');
+
+-- Recreate policies on public.validated_subscriptions
+create policy "Allow authenticated users to read their own validated subscriptions"
+on public.validated_subscriptions
+for select
+using (auth.uid() = user_id);
+
+create policy "Allow authenticated users to insert validated subscriptions"
+on public.validated_subscriptions
+for insert
+with check (auth.uid() = user_id);
+
+create policy "Allow service role to update any validated subscriptions"
+on public.validated_subscriptions
+for update
+using (auth.role() = 'service_role');
+
+-- Recreate policies on public.uploaded_files
+create policy "Allow authenticated users to read their own uploaded files"
+on public.uploaded_files
+for select
+using (auth.uid() = user_id);
+
+create policy "Allow authenticated users to insert uploaded files"
+on public.uploaded_files
+for insert
+with check (auth.uid() = user_id);
+
+create policy "Allow service role to update any uploaded files"
+on public.uploaded_files
+for update
+using (auth.role() = 'service_role');
+
+-- Recreate policies on public.enriched_data
+create policy "Allow authenticated users to read their own enriched data"
+on public.enriched_data
+for select
+using (auth.uid() = user_id);
+
+create policy "Allow authenticated users to insert enriched data"
+on public.enriched_data
+for insert
+with check (auth.uid() = user_id);
+
+create policy "Allow service role to update any enriched data"
+on public.enriched_data
+for update
+using (auth.role() = 'service_role');
+
+-- Recreate policies on public.app_logs
+create policy "Allow service role to insert logs"
+on public.app_logs
+for insert
+with check (auth.role() = 'service_role');
+
+create policy "Allow service role to read logs"
+on public.app_logs
+for select
+using (auth.role() = 'service_role');
+
+-- Allow authenticated users to read organizations
+CREATE POLICY "Allow authenticated users to read organizations"
+ON public.organizations
+FOR SELECT
+TO authenticated
+USING (true);
+
+-- Allow service role to perform any action
+CREATE POLICY "Allow service role to perform any action"
+ON public.organizations
+FOR ALL
+TO service_role
+USING (true);
+
+-- Allow anon users to read organizations (if needed)
+CREATE POLICY "Allow anon users to read organizations"
+ON public.organizations
+FOR SELECT
+TO anon
+USING (true);

@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd  # Import pandas
-from mitosheet import sheet
+from mitosheet import spreadsheet  # Import the correct Mito component
 from subscriptions import process_uploaded_file, validate_and_normalize, detect_recurring_charges
 from supabase_integration import fetch_uploaded_files, fetch_file_data, fetch_stored_subscriptions
 from supabase_integration import fetch_users, fetch_logs, fetch_organizations, update_user, update_organization
@@ -63,7 +63,7 @@ def render_upload_page(user):
             # Read the content of the uploaded file
             data = pd.read_csv(uploaded_file)
             # Display MitoSheet for data preview and manipulation
-            sheet(data)
+            spreadsheet(data)
             if st.button("Save and Process"):
                 processed_data = process_uploaded_file(data, user)
                 st.success("File processed successfully!")
