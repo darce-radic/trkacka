@@ -50,8 +50,10 @@ def main():
 
     if auth_action == "Login":
         st.session_state.user = authenticate_user()
+        st.experimental_rerun()
     elif auth_action == "Sign Up":
         signup_user()
+        st.experimental_rerun()
 
     user = st.session_state.user
 

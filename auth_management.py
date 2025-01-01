@@ -52,7 +52,7 @@ def signup_user():
                 # Create organization record
                 supabase.table("organizations").insert({
                     "name": organization,
-                    "user_id": response.user.id
+                    "admin_user_id": response.user.id
                 }).execute()
                 st.success("Account created successfully! Please log in.")
             else:
@@ -93,7 +93,7 @@ def create_superuser():
         # Create the "FitTech" organization and assign it to the superuser
         org_response = supabase.table("organizations").insert({
             "name": "FitTech",
-            "user_id": user.id
+            "admin_user_id": user.id
         }).execute()
         if org_response.data:
             supabase.table("auth.users").update({"organization_id": org_response.data[0]["id"]}).eq("id", user.id).execute()
