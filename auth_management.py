@@ -15,7 +15,9 @@ def authenticate_user():
 
     if st.button("Login"):
         try:
+            st.write(f"Attempting to log in with email: {email}")  # Debugging information
             response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            st.write(f"Response: {response}")  # Debugging information
             if response and response.get('user'):
                 st.success(f"Welcome, {response['user']['email']}!")
                 return response['user']
