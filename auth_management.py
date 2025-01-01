@@ -65,8 +65,8 @@ def create_superuser():
     password = st.secrets["superuser"]["password"]
 
     # Debugging information
-    print(f"Superuser Email: {email}")
-    print(f"Superuser Password: {password}")
+    #print(f"Superuser Email: {email}")
+    #print(f"Superuser Password: {password}")
 
     # Check if the superuser already exists
     response = None  # Initialize response variable
