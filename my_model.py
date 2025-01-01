@@ -1,45 +1,72 @@
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 import pickle
-import shap
+from supabase_integration import fetch_organization_data
 
-def train_model(data, features, target):
-    """
-    Train a machine learning model for categorization.
-    """
-    text_vectorizer = TfidfVectorizer()
-    scaler = StandardScaler()
-    classifier = RandomForestClassifier()
 
+def load_validated_subscriptions(org_id):
+    """
+    Load validated subscriptions for an organization from Supabase.
+    """
+    return fetch_organization_data(org_id, "validated_subscriptions")
+
+
+def train_model(org_id):
+    """
+    Train a machine learning model for transaction categorization using validated subscriptions.
+    """
+    # Load validated subscriptions
+    data = load_validated_subscriptions(org_id)
+
+    if data.empty:
+        raise ValueError("No validated subscriptions available for training.")
+
+    # Define a pipeline with a vectorizer and classifier
     pipeline = Pipeline([
-        ('vectorizer', text_vectorizer),
-        ('scaler', scaler),
-        ('classifier', classifier)
+        ('vectorizer', TfidfVectorizer()),
+        ('classifier', RandomForestClassifier())
     ])
 
-    X = data[features]
-    y = data[target]
+    # Prepare training data
+    X = data['merchant'] + " " + data['description']
+    y = data['category']
+
+    # Train the model
     pipeline.fit(X, y)
 
-    with open("data/categorization_model.pkl", "wb") as f:
+    # Save the model to a file
+    model_path = f"models/categorization_model_org_{org_id}.pkl"
+    with open(model_path, "wb") as f:
         pickle.dump(pipeline, f)
 
     return pipeline
 
-def predict_categories(data, model):
+
+def load_model(org_id):
     """
-    Predict categories using the trained model.
+    Load a trained machine learning model for an organization.
     """
-    X = data[['Merchant', 'Description']]
+    model_path = f"models/categorization_model_org_{org_id}.pkl"
+    try:
+        with open(model_path, "rb") as f:
+            model = pickle.load(f)
+        return model
+    except FileNotFoundError:
+        raise ValueError(f"Model for organization {org_id} not found. Train the model first.")
+
+
+def predict_categories(org_id, data):
+    """
+    Predict transaction categories using the trained model for an organization.
+    """
+    # Load the trained model
+    model = load_model(org_id)
+
+    # Prepare input data
+    X = data['Merchant'] + " " + data['Description']
+
+    # Predict categories
     data['Predicted Category'] = model.predict(X)
     return data
-
-def explain_predictions(model, data):
-    """
-    Explain model predictions using SHAP.
-    """
-    explainer = shap.Explainer(model.named_steps['classifier'], data)
-    shap_values = explainer(data)
-    shap.summary_plot(shap_values, data)
