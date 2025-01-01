@@ -1,3 +1,7 @@
+
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import streamlit as st
 import ui_management
 from subscriptions import process_uploaded_file, enrich_merchant_data
