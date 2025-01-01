@@ -1,4 +1,3 @@
-
 __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
@@ -8,8 +7,7 @@ from subscriptions import process_uploaded_file, enrich_merchant_data
 from supabase_integration import fetch_uploaded_files, upload_enriched_data
 from ml_model import train_model
 from crewai_workflow import run_crewai_workflow
-from auth_management import authenticate_user
-
+from auth_management import authenticate_user, signup_user  # Import the necessary functions
 
 def render_run_crewai_logic(user):
     """
@@ -40,7 +38,6 @@ def render_run_crewai_logic(user):
         st.json(result)
         ui_management.render_enriched_merchant_data(enriched_data)
 
-
 import initialization  # Import the initialization module
 
 def main():
@@ -51,9 +48,9 @@ def main():
     auth_action = st.sidebar.selectbox("Choose Action", ["Login", "Sign Up"])
 
     if auth_action == "Login":
-        user = auth_management.authenticate_user()
+        user = authenticate_user()
     elif auth_action == "Sign Up":
-        auth_management.signup_user()
+        signup_user()
 
     if user:
         if user["is_superuser"]:
@@ -86,7 +83,6 @@ def main():
                 ui_management.render_train_model(user["organization_id"])
             elif page == "Run CrewAI Logic":
                 render_run_crewai_logic(user)
-
 
 if __name__ == "__main__":
     main()
