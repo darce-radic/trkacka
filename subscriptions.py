@@ -65,7 +65,7 @@ def enrich_merchant_data(data):
     if missing_columns:
         raise ValueError(f"The following required columns are missing from the data: {', '.join(missing_columns)}")
 
-    data["Merchant Info"] = data["Merchant"].apply(lambda x: serper_tool.run(x))
+    data["Merchant Info"] = data["Merchant"].apply(lambda x: serper_tool.run(query=x))
     return data
 
 def infer_merchant_from_description(description):
