@@ -1,4 +1,6 @@
 pysqlite3-binary
+crewai
+crewai_tools
 streamlit
 pandas
 numpy
@@ -6,7 +8,6 @@ seaborn
 matplotlib
 scikit-learn
 supabase
-crewai
 requests
 shap
 mitosheet

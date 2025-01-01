@@ -1,39 +1,30 @@
-import re
 from crewai import Agent, Task, Crew, Process
-from crewai_tools import SerperDevTool, TextClassificationTool
-
-# Custom tool using re module
-class RegexTool:
-    def __init__(self):
-        pass
-
-    def clean_text(self, text, pattern, replacement):
-        return re.sub(pattern, replacement, text)
+from crewai_tools import SerperDevTool, RagTool, CSVSearchTool
 
 # Initialize tools
-regex_tool = RegexTool()
+csv_tool = CSVSearchTool()
+rag_tool = RagTool()
 serper_tool = SerperDevTool()
-text_classifier_tool = TextClassificationTool()
 
 # Define Agents
 normalizer_agent = Agent(
     role="Data Normalizer",
     goal="Clean and standardize uploaded transaction data.",
-    tools=[regex_tool],
+    tools=[csv_tool],
     verbose=True
 )
 
 pattern_analyzer_agent = Agent(
     role="Pattern Analyzer",
     goal="Identify recurring subscription patterns in the data.",
-    tools=[],
+    tools=[csv_tool],
     verbose=True
 )
 
 categorizer_agent = Agent(
     role="Categorizer",
     goal="Categorize transactions into predefined subscription categories.",
-    tools=[text_classifier_tool],
+    tools=[rag_tool],
     verbose=True
 )
 
@@ -47,19 +38,19 @@ enrichment_agent = Agent(
 # Define Tasks
 normalization_task = Task(
     description="Normalize uploaded data into a consistent format.",
-    expected_output="Normalized CSV file with clean columns.",
+    expected_output="Normalized data with standardized columns.",
     agent=normalizer_agent
 )
 
 pattern_analysis_task = Task(
     description="Analyze the normalized data to detect recurring transactions.",
-    expected_output="List of recurring transactions.",
+    expected_output="List of recurring transactions with patterns identified.",
     agent=pattern_analyzer_agent
 )
 
 categorization_task = Task(
     description="Categorize recurring transactions into predefined categories.",
-    expected_output="Categorized transactions with labels.",
+    expected_output="Categorized transactions with corresponding labels.",
     agent=categorizer_agent
 )
 
