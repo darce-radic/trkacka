@@ -25,6 +25,7 @@ def authenticate_user():
                 st.error("Invalid credentials.")
         except Exception as e:
             st.error(f"Error: {e}")
+            st.write(f"Exception details: {e}")  # Detailed exception information
     return None
 
 def signup_user():
