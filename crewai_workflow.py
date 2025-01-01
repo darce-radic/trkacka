@@ -1,177 +1,180 @@
-import streamlit as st
+import pandas as pd
 from crewai import Agent, Task, Crew, Process
-from crewai_tools import SerperDevTool, RagTool, CSVSearchTool
+from crewai_tools import SerperDevTool
 import os
 
-# Load OpenAI API key from st.secrets
-os.environ["OPENAI_API_KEY"] = st.secrets["openai"]["api_key"]
+# Load OpenAI API key (if needed for CrewAI tools like SerperDevTool)
+os.environ["OPENAI_API_KEY"] = "your_openai_api_key_here"
 
-# Initialize tools
-csv_tool = CSVSearchTool()
-rag_tool = RagTool()
+# Initialize SerperDevTool for enrichment
 serper_tool = SerperDevTool()
 
-# Define Agents
+# Step 1: Normalize Data
+def normalize_data(data):
+    """
+    Prepare the data for processing by cleaning and standardizing columns.
+    """
+    # Drop unnamed columns
+    data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
+
+    # Ensure necessary columns
+    required_columns = ["Date", "Amount", "Description"]
+    missing_columns = [col for col in required_columns if col not in data.columns]
+    if missing_columns:
+        raise ValueError(f"The following required columns are missing: {', '.join(missing_columns)}")
+
+    # Convert date column to datetime for easier grouping
+    data["Date"] = pd.to_datetime(data["Date"])
+
+    return data
+
+# Step 2: Detect Recurring Charges
+def detect_recurring_charges(data):
+    """
+    Detect potential recurring charges by grouping descriptions and amounts.
+    """
+    # Group by description and amount to find recurring charges
+    recurring = (
+        data.groupby(["Description", "Amount"])
+        .size()
+        .reset_index(name="Frequency")
+    )
+
+    # Filter for transactions that occur more than once
+    recurring = recurring[recurring["Frequency"] > 1]
+
+    # Merge back to include original details
+    recurring_data = data.merge(
+        recurring, on=["Description", "Amount"], how="inner"
+    ).sort_values(by=["Description", "Date"])
+
+    return recurring_data
+
+# Step 3: Enrichment Logic
+def infer_merchant_from_description(description):
+    """
+    Use CrewAI tools (like SerperDevTool) or mock logic to infer merchant.
+    """
+    if "Netflix" in description:
+        return "Netflix"
+    elif "Spotify" in description:
+        return "Spotify"
+    elif "Gym" in description:
+        return "Local Gym"
+    else:
+        return "Unknown Merchant"
+
+def enrich_recurring_charges(recurring_data):
+    """
+    Enrich recurring charges by adding merchant and subscription-related context.
+    """
+    if recurring_data.empty:
+        return recurring_data
+
+    recurring_data["Merchant"] = recurring_data["Description"].apply(
+        lambda desc: infer_merchant_from_description(desc)
+    )
+    recurring_data["Category"] = recurring_data["Merchant"].apply(
+        lambda merchant: "Subscription" if merchant != "Unknown Merchant" else "Unknown"
+    )
+
+    return recurring_data
+
+# Step 4: Full Workflow
+def run_subscription_detection(data):
+    """
+    Full workflow to detect recurring transactions and enrich them.
+    """
+    try:
+        # Step 1: Normalize data
+        normalized_data = normalize_data(data)
+
+        # Step 2: Detect recurring charges
+        recurring_data = detect_recurring_charges(normalized_data)
+
+        if recurring_data.empty:
+            print("No recurring transactions detected.")
+            return None
+
+        # Step 3: Enrich recurring transactions
+        enriched_data = enrich_recurring_charges(recurring_data)
+
+        return enriched_data
+    except Exception as e:
+        print(f"Error detecting recurring subscriptions: {e}")
+        return None
+
+# Step 5: Integration with CrewAI
+# Define CrewAI agents and tasks
 normalizer_agent = Agent(
     role="Data Normalizer",
-    goal="Clean and standardize uploaded transaction data.",
-    tools=[csv_tool],
+    goal="Prepare and standardize transaction data for processing.",
+    tools=[],
     verbose=True,
-    backstory="Responsible for ensuring data consistency and cleanliness."
+    backstory="Responsible for ensuring clean and consistent data for analysis."
 )
 
-pattern_analyzer_agent = Agent(
-    role="Pattern Analyzer",
-    goal="Identify recurring subscription patterns in the data.",
-    tools=[csv_tool],
+recurring_detector_agent = Agent(
+    role="Recurring Charge Detector",
+    goal="Identify potential recurring transactions indicative of subscriptions.",
+    tools=[],
     verbose=True,
-    backstory="Analyzes data to find recurring patterns and trends."
-)
-
-categorizer_agent = Agent(
-    role="Categorizer",
-    goal="Categorize transactions into predefined subscription categories.",
-    tools=[rag_tool],
-    verbose=True,
-    backstory="Classifies transactions into specific categories for better organization."
+    backstory="Skilled in detecting patterns in financial transactions."
 )
 
 enrichment_agent = Agent(
     role="Enrichment Agent",
-    goal="Enrich merchant data with additional context using SerperDevTool.",
+    goal="Enrich transaction data by identifying merchants and subscription details.",
     tools=[serper_tool],
     verbose=True,
-    backstory="Adds contextual information to merchant data for enhanced insights."
+    backstory="Uses advanced tools to enrich transaction details for better insights."
 )
 
-# Define Tasks
 normalization_task = Task(
-    description="Normalize uploaded data into a consistent format. "
-                "Ensure columns are standardized and transaction details are parsed.",
-    expected_output="Normalized data with standardized columns and parsed descriptions.",
+    description="Normalize and prepare transaction data.",
+    expected_output="Cleaned and standardized data ready for analysis.",
     agent=normalizer_agent
 )
 
-pattern_analysis_task = Task(
-    description="Analyze the normalized data to detect recurring transactions. "
-                "Focus on identifying subscriptions and repetitive payments.",
-    expected_output="List of recurring transactions with identified patterns.",
-    agent=pattern_analyzer_agent
-)
-
-categorization_task = Task(
-    description="Categorize recurring transactions into predefined categories such as "
-                "'Subscription', 'Refund', 'One-time Payment', etc.",
-    expected_output="Categorized transactions with corresponding labels.",
-    agent=categorizer_agent
+recurring_detection_task = Task(
+    description="Analyze data to detect potential recurring transactions.",
+    expected_output="A list of recurring transactions and their frequencies.",
+    agent=recurring_detector_agent
 )
 
 enrichment_task = Task(
-    description="Use SerperDevTool to enrich merchant information for each transaction. "
-                "Provide additional context such as industry or location.",
-    expected_output="Merchant data enriched with additional contextual information.",
+    description="Enrich recurring transactions with merchant and category details.",
+    expected_output="Recurring transactions enriched with merchant and subscription data.",
     agent=enrichment_agent
 )
 
 # Define Crew
 crew = Crew(
-    agents=[
-        normalizer_agent,
-        pattern_analyzer_agent,
-        categorizer_agent,
-        enrichment_agent
-    ],
-    tasks=[
-        normalization_task,
-        pattern_analysis_task,
-        categorization_task,
-        enrichment_task
-    ],
-    process=Process.sequential  # Execute tasks sequentially
+    agents=[normalizer_agent, recurring_detector_agent, enrichment_agent],
+    tasks=[normalization_task, recurring_detection_task, enrichment_task],
+    process=Process.sequential  # Sequential execution of tasks
 )
 
-def run_crewai_workflow(data):
-    """
-    Run CrewAI workflow on the given data with enhanced logging.
-    """
-    print("Running CrewAI workflow...")
-    try:
-        # Kickoff workflow
-        result = crew.kickoff(inputs={"data": data.to_dict(orient="records")})
-        
-        # Log each task's output
-        for idx, task_result in enumerate(result):
-            print(f"Task {idx+1} - {task_result['task']} result:")
-            if "output" in task_result:
-                print(task_result["output"])
-            if "error" in task_result:
-                print(f"Error: {task_result['error']}")
-        
-        return result
-    except Exception as e:
-        print(f"Error running CrewAI workflow: {e}")
-        return None
+# Example Run
+if __name__ == "__main__":
+    # Example dataset
+    sample_data = pd.DataFrame({
+        "Date": ["2024-12-27", "2024-12-27", "2024-12-24", "2024-12-24", "2024-12-23"],
+        "Amount": [-300, -297.1, -300, -200, -300],
+        "Description": [
+            "Netflix Subscription Dec", 
+            "Spotify Dec Payment", 
+            "Netflix Subscription Nov", 
+            "Gym Monthly Fee", 
+            "Netflix Subscription Oct"
+        ]
+    })
 
-def display_crewai_results(result):
-    """
-    Display the results of the CrewAI workflow.
-    """
-    if result is None:
-        st.error("No results to display. The workflow may have encountered an error.")
-        return
+    # Run workflow
+    result = run_subscription_detection(sample_data)
 
-    st.write("CrewAI Workflow Results:")
-    for task_result in result:
-        st.subheader(task_result["task"])
-        if "output" in task_result:
-            st.write(task_result["output"])
-        if "error" in task_result:
-            st.error(task_result["error"])
-
-def render_run_crewai_logic(user):
-    """
-    Run CrewAI logic on stored data and display enriched merchant data.
-    """
-    st.title("Run CrewAI Logic with Merchant Enrichment")
-
-    # Access user ID correctly
-    user_id = user.id  # Correctly access the user ID
-
-    files = fetch_uploaded_files(user_id)
-    if not files:
-        st.warning("No files available for processing.")
-        return
-
-    st.write("Available Files:")
-    file_id = st.selectbox("Select a file to process", [file["id"] for file in files])
-    if file_id:
-        file_data = fetch_file_data(file_id)
-
-        # Check for required columns before running the workflow
-        required_columns = ["Date", "Amount", "Description", "Merchant"]
-        missing_columns = [col for col in required_columns if col not in file_data.columns]
-        if missing_columns:
-            st.error(f"The following required columns are missing from the data: {', '.join(missing_columns)}")
-            return
-
-        # Run CrewAI Workflow with progress indicator
-        st.write("Processing CrewAI Workflow...")
-        progress_bar = st.progress(0)
-        with st.spinner("Running CrewAI workflow..."):
-            result = run_crewai_workflow(file_data)
-            progress_bar.progress(50)
-
-        # Display CrewAI results
-        st.write("CrewAI Workflow Results:")
-        display_crewai_results(result)
-        progress_bar.progress(75)
-
-        # Enrich and store data
-        st.write("Enriching Merchant Data...")
-        enriched_data = enrich_merchant_data(file_data)
-        upload_enriched_data(user_id, file_id, enriched_data)
-        progress_bar.progress(100)
-
-        # Display enriched data
-        st.write("Enriched Merchant Data:")
-        st.dataframe(enriched_data)
+    if result is not None:
+        print("Recurring Subscriptions Detected:")
+        print(result)
+    else:
+        print("No recurring subscriptions found.")
