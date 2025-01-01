@@ -11,10 +11,10 @@ from crewai_workflow import run_crewai_workflow
 from auth_management import authenticate_user, signup_user
 import initialization
 from dashboard import render_dashboard  # Import the dashboard rendering function
-import posthog
+import os
 
-# Disable telemetry
-posthog.disable_telemetry()
+# Disable telemetry by setting an environment variable
+os.environ["POSTHOG_DISABLE_TELEMETRY"] = "true"
 
 # Load credentials from st.secrets
 supabase_url = st.secrets["supabase"]["url"]
