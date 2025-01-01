@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd  # Import pandas
-from mitosheet import sheet  # Import the correct Mito component
+# from mitosheet import sheet  # Comment out the Mito component import
 from subscriptions import process_uploaded_file, validate_and_normalize, detect_recurring_charges
 from supabase_integration import fetch_uploaded_files, fetch_file_data, fetch_stored_subscriptions
 from supabase_integration import fetch_users, fetch_logs, fetch_organizations, update_user, update_organization
@@ -62,8 +62,10 @@ def render_upload_page(user):
         try:
             # Read the content of the uploaded file into a DataFrame
             data = pd.read_csv(uploaded_file)
-            # Display MitoSheet for data preview and manipulation
-            sheet(data)
+            # Display a preview of the data
+            st.write("Data Preview:")
+            st.dataframe(data.head())
+            # sheet(data)  # Comment out the MitoSheet component
             if st.button("Save and Process"):
                 processed_data = process_uploaded_file(data, user)
                 st.success("File processed successfully!")
@@ -93,7 +95,9 @@ def render_upload_with_mitosheet(user):
             # Read the content of the uploaded file into a DataFrame
             data = pd.read_csv(uploaded_file)
             # Validate and normalize the file with MitoSheet
-            sheet(data)
+            # sheet(data)  # Comment out the MitoSheet component
+            st.write("Data Preview:")
+            st.dataframe(data.head())
 
             # Store edited data in Supabase
             response = process_uploaded_file(data, user)
