@@ -15,28 +15,32 @@ normalizer_agent = Agent(
     role="Data Normalizer",
     goal="Clean and standardize uploaded transaction data.",
     tools=[csv_tool],
-    verbose=True
+    verbose=True,
+    backstory="Responsible for ensuring data consistency and cleanliness."
 )
 
 pattern_analyzer_agent = Agent(
     role="Pattern Analyzer",
     goal="Identify recurring subscription patterns in the data.",
     tools=[csv_tool],
-    verbose=True
+    verbose=True,
+    backstory="Analyzes data to find recurring patterns and trends."
 )
 
 categorizer_agent = Agent(
     role="Categorizer",
     goal="Categorize transactions into predefined subscription categories.",
     tools=[rag_tool],
-    verbose=True
+    verbose=True,
+    backstory="Classifies transactions into specific categories for better organization."
 )
 
 enrichment_agent = Agent(
     role="Enrichment Agent",
     goal="Enrich merchant data with additional context using SerperDevTool.",
     tools=[serper_tool],
-    verbose=True
+    verbose=True,
+    backstory="Adds contextual information to merchant data for enhanced insights."
 )
 
 # Define Tasks
