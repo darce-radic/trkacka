@@ -116,16 +116,16 @@ def fetch_logs():
 
 def fetch_users():
     """
-    Fetch all users from the users table.
+    Fetch all users from the auth.users table.
     """
-    response = supabase.table("users").select("*").execute()
+    response = supabase.table("auth.users").select("*").execute()
     return pd.DataFrame(response.data)
 
 def update_user(user_id, updates):
     """
     Update user information securely using the service role key.
     """
-    response = service_supabase.table("users").update(updates).eq("id", user_id).execute()
+    response = service_supabase.table("auth.users").update(updates).eq("id", user_id).execute()
     return response
 
 def fetch_organizations():
