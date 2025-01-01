@@ -47,18 +47,28 @@ def render_run_crewai_logic(user):
     if file_id:
         file_data = fetch_file_data(file_id)
 
+        # Check for required columns before running the workflow
+        required_columns = ["Date", "Amount", "Description", "Merchant"]
+        missing_columns = [col for col in required_columns if col not in file_data.columns]
+        if missing_columns:
+            st.error(f"The following required columns are missing from the data: {', '.join(missing_columns)}")
+            return
+
         # Run CrewAI Workflow
         st.write("Processing CrewAI Workflow...")
         result = run_crewai_workflow(file_data)
 
         # Enrich and store data
-        enriched_data = enrich_merchant_data(file_data)
-        upload_enriched_data(user_id, file_id, enriched_data)
+        try:
+            enriched_data = enrich_merchant_data(file_data)
+            upload_enriched_data(user_id, file_id, enriched_data)
 
-        # Display results
-        st.write("CrewAI Result:")
-        st.json(result)
-        ui_management.render_enriched_merchant_data(enriched_data)
+            # Display results
+            st.write("CrewAI Result:")
+            st.json(result)
+            ui_management.render_enriched_merchant_data(enriched_data)
+        except ValueError as e:
+            st.error(f"Error enriching merchant data: {e}")
 
 def main():
     # Call initialization steps
