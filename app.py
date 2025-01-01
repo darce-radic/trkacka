@@ -54,9 +54,12 @@ def render_run_crewai_logic(user):
             st.error(f"The following required columns are missing from the data: {', '.join(missing_columns)}")
             return
 
+        # Convert data to JSON format
+        data_json = file_data.to_json(orient="records")
+
         # Run CrewAI Workflow
         st.write("Processing CrewAI Workflow...")
-        result = run_crewai_workflow(file_data)
+        result = run_crewai_workflow(data_json)
 
         # Enrich and store data
         try:
