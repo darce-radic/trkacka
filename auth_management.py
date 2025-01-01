@@ -28,6 +28,8 @@ def authenticate_user():
             st.error(f"Error: {e}")
             st.write(f"Exception details: {e}")  # Detailed exception information
             st.write(f"Supabase response: {response}")  # Log the full response
+            st.write(f"Supabase URL: {supabase_url}")  # Log Supabase URL
+            st.write(f"Supabase Anon Key: {supabase_anon_key}")  # Log Supabase Anon Key
     return None
 
 def signup_user():
@@ -49,7 +51,10 @@ def signup_user():
             else:
                 st.error("Error signing up. Please try again.")
         except Exception as e:
-            st.error(f"Error: {e}")
+            if "User already registered" in str(e):
+                st.error("User already exists. Please log in.")
+            else:
+                st.error(f"Error: {e}")
 
 def create_superuser():
     """
