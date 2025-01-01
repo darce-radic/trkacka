@@ -1,6 +1,9 @@
 from crewai import Agent, Task, Crew, Process
 from crewai_tools import SerperDevTool, RagTool, CSVSearchTool
+import os
 
+# Load OpenAI API key from st.secrets
+os.environ["OPENAI_API_KEY"] = st.secrets["openai"]["api_key"]
 # Initialize tools
 csv_tool = CSVSearchTool()
 rag_tool = RagTool()
